@@ -4,14 +4,24 @@ public class Goal implements Comparable {
 
 	protected int id;
 	protected String name;
+	protected double consistencyValue;
 
-	public Goal(String name) {
-		this(name, 0);
+	public double getConsistencyValue() {
+		return consistencyValue;
 	}
 
-	public Goal(String name, int id) {
+	public void setConsistencyValue(double consistencyValue) {
+		this.consistencyValue = consistencyValue;
+	}
+
+	public Goal(String name) {
+		this(name, 0, 0);
+	}
+
+	public Goal(String name, int id, double consistencyValue) {
 		this.name = name;
 		this.id = id;
+		this.consistencyValue = consistencyValue;
 	}
 
 	public int getId() {

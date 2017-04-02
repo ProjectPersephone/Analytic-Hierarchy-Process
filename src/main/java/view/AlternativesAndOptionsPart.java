@@ -48,8 +48,10 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		super(tree);
 		sourceFolder = "src/XML/";
 		fileName = "testXML.xml";
-		System.out.println("bef: "+tree);
+		
+//		System.out.println("bef: "+tree);
 		tree.setAlternatives(FXCollections.observableArrayList());
+		tree.setMaxConsistencyValue(0.1);
 		pane = createPane();
 	}
 
@@ -76,6 +78,10 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 		Button addAlternativeButton = setCreateButton();
 		optionsPane.getChildren().add(addAlternativeButton);
+		
+		TextField tfConsistencyValue = createMaxConsistencyValueTextField();
+		optionsPane.getChildren().add(tfConsistencyValue);
+
 		// TODO creating file (source)
 		// TODO consistency value
 		// TODO consistency method
@@ -99,7 +105,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					String filePath = sourceFolder + fileName;
 					XMLCreatorLogic2 xml;
 					xml = new XMLCreatorLogic2();
-					System.out.println(tree);
+//					System.out.println(tree);
 					xml.execute(filePath, tree);
 				} catch (ParserConfigurationException e) {
 					showAlert(e);
@@ -116,6 +122,29 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			}
 		});
 		return bCompute;
+	}
+	
+	private TextField createMaxConsistencyValueTextField() {
+		TextField tf = new TextField();
+		tf.setText(fileName);
+		tf.setPrefColumnCount(10);
+		
+		tf.setText(tree.getMaxConsistencyValue().toString());
+		tf.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				String regex =  "0{1}.\\d{0,12}";
+				if (newValue.matches(regex)){
+					tree.setMaxConsistencyValue(Double.parseDouble(newValue));
+				} else {
+					tf.setText(oldValue);
+				}
+			}
+
+		});
+
+		GridPane.setConstraints(tf, 1, 2);
+		return tf;
 	}
 
 	private TextField createFileTextField() {

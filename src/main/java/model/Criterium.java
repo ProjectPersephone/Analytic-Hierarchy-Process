@@ -9,13 +9,13 @@ import exceptions.MalformedTreeException;
 public class Criterium extends Alternative {
 
 	private int parentId;
-	private Map<String, Integer> values;
+	private Map<String, Double> values;
 
 	public Criterium(int parentId, String name) throws MalformedTreeException {
 		super(name);
-		values = new TreeMap<String, Integer>();
+		values = new TreeMap<String, Double>();
 
-		values.put(name, 1);
+		values.put(name, 1.);
 		this.parentId = parentId;
 	}
 
@@ -38,11 +38,11 @@ public class Criterium extends Alternative {
 	// this.name = newName;
 	// }
 
-	public Map<String, Integer> getValues() {
+	public Map<String, Double> getValues() {
 		return values;
 	}
 
-	public void setValue(Map<String, Integer> values) {
+	public void setValue(Map<String, Double> values) {
 		this.values = values;
 	}
 
@@ -55,8 +55,7 @@ public class Criterium extends Alternative {
 		return "(id: " + id + " | parentId: " + parentId + " | name: " + name + " | values: " + values + ")";
 	}
 
-	public void addValuesOf(String name, int value) {
+	public void addValuesOf(String name, double value) {
 		values.put(name, value);
 	}
-
 }

@@ -11,6 +11,10 @@ import exceptions.MalformedTreeException;
 import exceptions.notFoundException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -35,7 +39,8 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 	// private List<Alternative> alternatives;
 	private Map<TreeBranch, Pane> treeBranchMap;
 	private int criteriumIndex;
-	private DataEnteringPart dataEnteringPart;
+	private DataEnteringPart dataEnteringPartBuilder;
+	private TreeBranch lastModifiedBranch;
 
 	private int getCriteriumIndex() {
 		criteriumIndex++;
@@ -56,6 +61,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 		createTreeBranchList();
 		criteriumIndex = 0;
 		pane = createPane();
+		lastModifiedBranch = (TreeBranch) treeBranchMap.keySet().toArray()[0];
 	}
 
 	private void createTreeBranchList() {
@@ -68,9 +74,19 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 	protected Pane createPane() {
 		Pane hBox = new HBox();
 		ScrollPane criteriumTreePane = getCriteriumTreePane();
-		dataEnteringPart = new DataEnteringPart(tree);
-
-		hBox.getChildren().addAll(criteriumTreePane, dataEnteringPart.getPart());
+		dataEnteringPartBuilder = new DataEnteringPart(tree);
+		Pane dataEnteringPart = dataEnteringPartBuilder.getPart();
+		hBox.getChildren().addAll(criteriumTreePane, dataEnteringPart);
+		
+		
+//		public final void setOnCustomEvent(EventHandler<? super CustomEvent> value) {
+//		    this.addEventHandler(CustomEvent.CUSTOM, value);
+//		}
+		dataEnteringPart.addEventHandler(ChangeConsistencyEvent.CHANGED_CONSISTENCY, event -> {
+			System.out.println(event.getGoal()+" || "+lastModifiedBranch.getCriterium());
+			handleConsistency(lastModifiedBranch, event.getGoal());
+			
+		});
 
 		return hBox;
 
@@ -131,7 +147,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 			// System.out.println(tb.isRemoveButton());
 			showNewCriterium(parentPane, tb, treeBranchMap.get(tb));
 
-			dataEnteringPart.refresh();
+			refresh();
 		} catch (MalformedTreeException e) {
 			e.printStackTrace();
 		}
@@ -143,7 +159,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		}
-		dataEnteringPart.refresh();
+		refresh();
 		Pane p = treeBranchMap.get(treeBranch);
 		Node pp = p.getParent();
 		((Pane) pp.getParent()).getChildren().remove(pp);
@@ -159,15 +175,28 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 			} catch (MalformedTreeException e) {
 				showAlert(e);
 			}
-			dataEnteringPart.refresh();
+			refresh();
 		} catch (notFoundException e) {
 			showAlert(e);
 		}
 	}
 
-	public void createComparisons(TreeBranch treeBranch) {
-		dataEnteringPart.createInputTable(treeBranch.getCriterium());
+	private void refresh() {
+		dataEnteringPartBuilder.refresh();
+//		handleConsistency(lastModifiedBranch, lastModifiedBranch.getCriterium());
+	}
 
+	public void createComparisons(TreeBranch treeBranch) {
+		lastModifiedBranch = treeBranch;
+		dataEnteringPartBuilder.createInputTable(treeBranch.getCriterium());
+		handleConsistency(treeBranch, treeBranch.getCriterium());
+
+	}
+
+	private void handleConsistency(TreeBranch treeBranch, Goal g) {
+		// System.out.println(treeBranch.getCriterium().getConsistencyValue());
+		treeBranch.setConsistencyLook(tree.isConsistent(g));
+		dataEnteringPartBuilder.showConsistency(g.getConsistencyValue());
 	}
 
 }

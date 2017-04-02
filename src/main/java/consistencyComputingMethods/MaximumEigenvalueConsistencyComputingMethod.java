@@ -21,11 +21,12 @@ public class MaximumEigenvalueConsistencyComputingMethod extends ConsistencyComp
 //			System.out.println(eigenvalues[i]);
 		}
 //		System.out.println(maxEig);
-		consistencyIndex = (maxEig - n)/(n-1);
-		System.out.println("CI: "+consistencyIndex);
-		System.out.println("RI: "+consistencyIndex/randomIndex[n]);
+		consistencyIndex = Math.abs(maxEig - n)/(n-1);
+		consistencyRatio = consistencyIndex/randomIndex[n];
+//		System.out.println("CI: "+consistencyIndex);
+//		System.out.println("RI: "+consistencyRatio);
 		
-		return 0;
+		return consistencyRatio;
 	}
 
 	@Override

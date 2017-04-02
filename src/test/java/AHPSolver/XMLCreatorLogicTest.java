@@ -50,18 +50,18 @@ public class XMLCreatorLogicTest {
 		List<Alternative> alts = Arrays.asList(aArray);
 		CriteriumTree ct = new CriteriumTree(goal, alts);
 
-		Map<String, Integer> values1 = new HashMap<String, Integer>();
-		values1.put("c1", 1);
-		values1.put("c2", 2);
+		Map<String, Double> values1 = new HashMap<String, Double>();
+		values1.put("c1", 1.);
+		values1.put("c2", 2.);
 
-		Map<String, Integer> values2 = new HashMap<String, Integer>();
-		values2.put("c3", 2);
-		values2.put("c4", 4);
-		values2.put("c5", 6);
+		Map<String, Double> values2 = new HashMap<String, Double>();
+		values2.put("c3", 2.);
+		values2.put("c4", 4.);
+		values2.put("c5", 6.);
 
-		Map<String, Integer> valuesA = new HashMap<String, Integer>();
-		valuesA.put("a1", 1);
-		valuesA.put("a2", 2);
+		Map<String, Double> valuesA = new HashMap<String, Double>();
+		valuesA.put("a1", 1.);
+		valuesA.put("a2", 2.);
 
 		Criterium c1 = new Criterium(goal.getId(), "c1");
 		c1.setValue(values1);
@@ -112,7 +112,7 @@ public class XMLCreatorLogicTest {
 //		System.out.println("s2 criteria: " + ct.getStageCriteria(2));
 //		System.out.println("s3 criteria: " + ct.getStageCriteria(3));
 
-		String filePath = "src/XML/testXML.xml";
+		String filePath = "testXML.xml";
 		XMLCreatorLogic xml = new XMLCreatorLogic();
 		xml.execute(filePath, ct);
 

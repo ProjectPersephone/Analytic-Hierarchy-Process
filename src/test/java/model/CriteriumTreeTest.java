@@ -24,12 +24,12 @@ public class CriteriumTreeTest {
 		Alternative[] aArray = new Alternative[] { alt1, alt2 };
 		List<Alternative> alts = Arrays.asList(aArray);
 		CriteriumTree ct = new CriteriumTree(goal, alts);
-		Map<String, Integer> values1 = new HashMap<String, Integer>();
-		values1.put("c1", 1);
-		values1.put("c2", 2);
-		Map<String, Integer> values2 = new HashMap<String, Integer>();
-		values2.put("c3", 2);
-		values2.put("c4", 4);
+		Map<String, Double> values1 = new HashMap<String, Double>();
+		values1.put("c1", 1.);
+		values1.put("c2", 2.);
+		Map<String, Double> values2 = new HashMap<String, Double>();
+		values2.put("c3", 2.);
+		values2.put("c4", 4.);
 		Criterium c1 = new Criterium(goal.getId(), "c1");
 		c1.setValue(values1);
 		Criterium c2 = new Criterium(goal.getId(), "c2");

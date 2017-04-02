@@ -100,9 +100,9 @@ public class XMLCreatorLogic2 {
 		Element eCriterium = doc.createElement("criteria");
 		eCriterium.setAttribute("name", c.getName());
 
-		for (Entry<String, Integer> entry : c.getValues().entrySet()) {
+		for (Entry<String, Double> entry : c.getValues().entrySet()) {
 			String key = entry.getKey();
-			Integer value = entry.getValue();
+			Double value = entry.getValue();
 			eCriterium.setAttribute(key, String.valueOf(value));
 		}
 		return eCriterium;

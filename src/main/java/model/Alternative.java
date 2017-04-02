@@ -8,7 +8,11 @@ public class Alternative extends Goal{
 	}
 	
 	public Alternative(String name){
-		super(name, generateNewCriteriumId());
+		super(name, generateNewCriteriumId(), 0);
+	}
+	
+	public Alternative(String name, double consistencyValue){
+		super(name, generateNewCriteriumId(), consistencyValue);
 	}
 
 	public int getId() {

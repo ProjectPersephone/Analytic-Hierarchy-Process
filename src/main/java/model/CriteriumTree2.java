@@ -17,10 +17,9 @@ import priorityVecorComputingMethods.GeometricMeanPriorityVectorComputingMethod;
 
 public class CriteriumTree2 {
 	private Map<Goal, List<Criterium>> criteriaTree;
-
 	private Goal goal;
-
 	private List<Alternative> alternatives;
+	private Double maxConsistencyValue;
 
 	public CriteriumTree2(Goal goal, List<Alternative> alternatives) throws FirstStageMustBeGoalException {
 		if (goal instanceof Goal) {
@@ -28,6 +27,7 @@ public class CriteriumTree2 {
 			this.criteriaTree = new HashMap<Goal, List<Criterium>>();
 			this.criteriaTree.put(goal, new ArrayList<Criterium>());
 			this.alternatives = alternatives;
+			this.maxConsistencyValue = 0.1;
 		} else {
 			throw new FirstStageMustBeGoalException();
 		}
@@ -67,10 +67,10 @@ public class CriteriumTree2 {
 	}
 
 	public List<Criterium> getChildren(Goal g) throws MalformedTreeException {
-		System.out.println("g: "+g);
-		System.out.println(this);
+//		System.out.println("g: "+g);
+//		System.out.println(this);
 		List<Criterium> children = criteriaTree.get(g);
-		System.out.println(this);
+//		System.out.println(this);
 		if(children == null){
 			throw new MalformedTreeException();
 		}
@@ -82,7 +82,7 @@ public class CriteriumTree2 {
 			Goal parent = getParent(c);
 			List<Criterium> children = criteriaTree.get(parent);
 			for (Criterium cr : children) {
-				Map<String, Integer> values = cr.getValues();
+				Map<String, Double> values = cr.getValues();
 				values.remove(c.getName());
 			}
 			criteriaTree.remove(c);
@@ -99,8 +99,8 @@ public class CriteriumTree2 {
 			// System.out.println(criterium.getName()+" "+newName);
 			Goal parent = getParent((Criterium) criterium);
 			for (Criterium c : getChildren(parent)) {
-				Map<String, Integer> values = c.getValues();
-				Integer v = values.get(criterium.getName());
+				Map<String, Double> values = c.getValues();
+				Double v = values.get(criterium.getName());
 				// System.out.println("bef1: "+values);
 				values.remove(criterium.getName());
 				// System.out.println("bef2: "+values);
@@ -116,7 +116,7 @@ public class CriteriumTree2 {
 
 	}
 
-	public void changeValue(Criterium c, String name, Integer value) {
+	public void changeValue(Criterium c, String name, Double value) {
 
 		if(c.getValues().containsKey(name)){
 			c.getValues().put(name, value);
@@ -124,6 +124,14 @@ public class CriteriumTree2 {
 		else{
 			//TODO refresh
 		}
+	}
+	
+	public Double getMaxConsistencyValue() {
+		return maxConsistencyValue;
+	}
+
+	public void setMaxConsistencyValue(Double maxConsistencyValue) {
+		this.maxConsistencyValue = maxConsistencyValue;
 	}
 
 	public void addAlternative(Alternative a) {
@@ -154,5 +162,20 @@ public class CriteriumTree2 {
 	public String toString() {
 		return "tree: " + criteriaTree;
 	}
+
+	public boolean isConsistent(Goal goal) {
+		if(maxConsistencyValue>=goal.getConsistencyValue()){
+			return true;
+		}
+		return false;
+	}
+
+//	public boolean isConsistent() {
+//		if(maxConsistencyValue>=consistencyValue){
+//			return true;
+//		}
+//		return false;
+//		
+//	}
 
 }

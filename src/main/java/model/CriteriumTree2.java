@@ -17,33 +17,65 @@ import priorityVecorComputingMethods.GeometricMeanPriorityVectorComputingMethod;
 
 public class CriteriumTree2 {
 	private Map<Goal, List<Criterium>> criteriaTree;
+	private Map<Goal, List<Criterium>> alternativesTree;
 	private Goal goal;
+	private List<Criterium> criteriumAlternativesList;
 	private List<Alternative> alternatives;
+
 	private Double maxConsistencyValue;
 
-	public CriteriumTree2(Goal goal, List<Alternative> alternatives) throws FirstStageMustBeGoalException {
+	public CriteriumTree2(Goal goal, List<Alternative> alternatives)
+			throws FirstStageMustBeGoalException, MalformedTreeException {
 		if (goal instanceof Goal) {
 			this.goal = goal;
 			this.criteriaTree = new HashMap<Goal, List<Criterium>>();
 			this.criteriaTree.put(goal, new ArrayList<Criterium>());
 			this.alternatives = alternatives;
+			prepareNewAlternatives();
 			this.maxConsistencyValue = 0.1;
 		} else {
 			throw new FirstStageMustBeGoalException();
 		}
 	}
 
+	private void prepareNewAlternatives() throws MalformedTreeException {
+		alternativesTree = new HashMap<Goal, List<Criterium>>();
+		Goal g = new Goal("tmp");
+		for (Alternative a : alternatives) {
+			Criterium newAlt = new Criterium(g.getId(), a.getName());
+			addNewCriteriumToList(criteriumAlternativesList, newAlt);
+		}
+
+		// TODO refresh comparations
+
+	}
+
+	public void addNewAlternative(Alternative a) throws MalformedTreeException {
+		alternatives.add(a);
+		Goal g = new Goal("tmp");
+		addNewCriteriumToList(criteriumAlternativesList, new Criterium(g.getId(), a.getName()));
+		// TODO refresh comparations
+	}
+
+	public List<Criterium> getCriteriumAlternatives(Goal g) throws MalformedTreeException {
+		// if (getChildren(g).size()>0) {
+		// throw new MalformedTreeException();
+		// }
+		// List<Criterium> children = new ArrayList<Criterium>();
+		// Criterium c = new Criterium(g.getId(), a.getName());
+		// children.add(c);
+		// }
+		// System.out.println(children);
+		// criteriaTree.put(g, children);
+		// return children;
+		return null;
+	}
+
 	public void addCriteriumTo(Goal parent, Criterium newCriterium) throws MalformedTreeException {
 		if (newCriterium.getParentId() == parent.getId()) {
 			List<Criterium> children = criteriaTree.get(parent);
-			children.add(newCriterium);
-			for (Criterium c : children) {
-
-				c.addValuesOf(newCriterium.getName(), 1);
-				newCriterium.addValuesOf(c.getName(), 1);
-			}
+			addNewCriteriumToList(children, newCriterium);
 			criteriaTree.put(newCriterium, new ArrayList<Criterium>());
-
 		} else {
 			throw new MalformedTreeException();
 		}
@@ -58,20 +90,10 @@ public class CriteriumTree2 {
 		}
 		throw new notFoundException();
 	}
-	public boolean hasChildren(Goal g){
-		if(criteriaTree.containsKey(g)){
-			return true;
-		}
-		return false;
-		
-	}
 
 	public List<Criterium> getChildren(Goal g) throws MalformedTreeException {
-//		System.out.println("g: "+g);
-//		System.out.println(this);
 		List<Criterium> children = criteriaTree.get(g);
-//		System.out.println(this);
-		if(children == null){
+		if (children == null) {
 			throw new MalformedTreeException();
 		}
 		return children;
@@ -94,56 +116,41 @@ public class CriteriumTree2 {
 	}
 
 	public void renameCriterium(Goal criterium, String newName) throws notFoundException, MalformedTreeException {
-		// System.out.println(criterium.getName()+" "+newName);
 		if (criterium instanceof Criterium) {
-			// System.out.println(criterium.getName()+" "+newName);
 			Goal parent = getParent((Criterium) criterium);
 			for (Criterium c : getChildren(parent)) {
 				Map<String, Double> values = c.getValues();
 				Double v = values.get(criterium.getName());
-				// System.out.println("bef1: "+values);
 				values.remove(criterium.getName());
-				// System.out.println("bef2: "+values);
 				c.addValuesOf(newName, v);
-				// values.put(newName, v);
-				// System.out.println("af: "+values);
-				// System.out.println("tree: "+this);
 			}
 		}
 		criterium.setName(newName);
-//		System.out.println("tree: " + this);
-		return;
-
 	}
 
 	public void changeValue(Criterium c, String name, Double value) {
 
-		if(c.getValues().containsKey(name)){
+		if (c.getValues().containsKey(name)) {
 			c.getValues().put(name, value);
-		}
-		else{
-			//TODO refresh
+		} else {
+			// TODO refresh
 		}
 	}
-	
+
+	private void addNewCriteriumToList(List<Criterium> criteriumList, Criterium newCriterium) {
+		criteriumList.add(newCriterium);
+		for (Criterium alt : criteriumList) {
+			alt.addValuesOf(newCriterium.getName(), 1);
+			newCriterium.addValuesOf(alt.getName(), 1);
+		}
+	}
+
 	public Double getMaxConsistencyValue() {
 		return maxConsistencyValue;
 	}
 
 	public void setMaxConsistencyValue(Double maxConsistencyValue) {
 		this.maxConsistencyValue = maxConsistencyValue;
-	}
-
-	public void addAlternative(Alternative a) {
-		alternatives.add(a);
-	}
-
-	public List<Alternative> getAlternatives() {
-		return alternatives;
-	}
-
-	public void setAlternatives(List<Alternative> alternatives) {
-		this.alternatives = alternatives;
 	}
 
 	public Goal getGoal() {
@@ -158,24 +165,28 @@ public class CriteriumTree2 {
 		return criteriaTree;
 	}
 
+	public List<Criterium> getCriteriumAlternativesList() {
+		return criteriumAlternativesList;
+	}
+
+	public List<Alternative> getAlternatives() {
+		return alternatives;
+	}
+
+	public void setAlternatives(List<Alternative> alternatives) {
+		this.alternatives = alternatives;
+	}
+
 	@Override
 	public String toString() {
 		return "tree: " + criteriaTree;
 	}
 
 	public boolean isConsistent(Goal goal) {
-		if(maxConsistencyValue>=goal.getConsistencyValue()){
+		if (maxConsistencyValue >= goal.getConsistencyValue()) {
 			return true;
 		}
 		return false;
 	}
-
-//	public boolean isConsistent() {
-//		if(maxConsistencyValue>=consistencyValue){
-//			return true;
-//		}
-//		return false;
-//		
-//	}
 
 }

@@ -22,10 +22,11 @@ public class CreatingPart extends ViewPart {
 
 		Pane vBox = new VBox();
 
-		ViewPart alternativesAndOptionsCreator = new AlternativesAndOptionsPart(tree);
-		ViewPart criteriumTreeAndDataEntryCreator = new CriteriumTreeAndDataEnteringPart(tree);
+		AlternativesAndOptionsPart alternativesAndOptionsCreator = new AlternativesAndOptionsPart(tree);
+		Pane alternativesAndOptionsPart = alternativesAndOptionsCreator.getPart();
+		ViewPart criteriumTreeAndDataEntryCreator = new CriteriumTreeAndDataEnteringPart(tree, alternativesAndOptionsPart);
 
-		vBox.getChildren().add(alternativesAndOptionsCreator.getPart());
+		vBox.getChildren().add(alternativesAndOptionsPart);
 		vBox.getChildren().add(criteriumTreeAndDataEntryCreator.getPart());
 
 		return vBox;

@@ -43,42 +43,19 @@ public class DataEnteringPart extends ViewPart {
 		super(tree);
 		pane = createPane();
 		ccm = ConsistencyComputeMethod.maximumEigenvalueMethod();
-		// pane.addEventHandler(ActionEvent.ACTION, new
-		// EventHandler<ActionEvent>() {
-		//
-		// @Override
-		// public void handle(ActionEvent event) {
-		// System.out.println("addEventHandler DEP");
-		//
-		// }
-		//
-		// });
 	}
 
 	@Override
 	protected Pane createPane() {
 		Pane vBox = new VBox();
-		ScrollPane criteriumTreePane = createScrollpane();
-
-		vBox.getChildren().add(criteriumTreePane);
+		vBox.getChildren().add(createScrollpane());
 		return vBox;
 	}
 
 	private ScrollPane createScrollpane() {
 		ScrollPane sp = new ScrollPane();
 		sp.setPrefSize(DEFAULT_HEIGHT, DEFAULT_HEIGHT);
-		Pane vBox = new VBox();
-
-		gridPane = createGridPane();
-		gridPane.setAlignment(Pos.CENTER);
-		gridPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
-		consistencyPane = new HBox();
-		consistencyPane.setAlignment(Pos.CENTER);
-		consistencyPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
-		// gridPane.getChildren().add(consistencyPane);
-
-		vBox.getChildren().addAll(gridPane, consistencyPane);
-		sp.setContent(vBox);
+		sp.setContent(arrangeScrollPaneContent());
 		return sp;
 	}
 
@@ -86,38 +63,32 @@ public class DataEnteringPart extends ViewPart {
 		lastShowed = criterium;
 		gridPane.getChildren().clear();
 		try {
-			if (tree.hasChildren(criterium)) {
-				createInputs2(tree.getChildren(criterium));
+			List<Criterium> cList = tree.getChildren(criterium);
+			if (cList.size()>0) {
+				System.out.println("has children");
+				createInputs(cList);
 			} else {
-				// TODO alternatives input data
+				System.out.println("do not have children");
+				createInputs(tree.getCriteriumAlternatives(criterium));
 			}
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		}
 	}
 
-	private void createInputs2(List<Criterium> children) {
+	private void createInputs(List<Criterium> children) {
+		int i;
 		for (int j = 0; j < children.size(); j++) {
 			Criterium c = children.get(j);
 			Map<String, Double> values = c.getValues();
 			createLabel(0, j * 2 + 1, c.getName());
 
-			int i = 1;
+			i = 1;
 			for (Entry<String, Double> entry : values.entrySet()) {
 				String key = entry.getKey();
-				// if (!c.getName().equals(key)) {
 				createLabel(i, j * 2, key);
 				createCmpValuesImputs(i, j * 2 + 1, c, key, entry.getValue());
 				i++;
-				// }
-
-				// if (j == 0) {
-				// createLabel(i, 0, key);
-				// createLabel(0, i, key);
-				// }
-				//
-				// createCmpValuesImputs(i, j + 1, c, key, entry.getValue());
-
 			}
 		}
 	}
@@ -132,12 +103,9 @@ public class DataEnteringPart extends ViewPart {
 
 	public void changeEnteredValue(Criterium c, String name, Double value) {
 		try {
-
 			tree.changeValue(c, name, value);
 			Goal parent = tree.getParent(c);
-
 			calculateConsistency(parent);
-
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		} catch (notFoundException e) {
@@ -147,41 +115,25 @@ public class DataEnteringPart extends ViewPart {
 
 	private void calculateConsistency(Goal parent) throws MalformedTreeException {
 		ConsistencyCalculator cc = new ConsistencyCalculator();
-		Matrix m = createMatrix();
-
-		parent.setConsistencyValue(cc.compute(m, ccm));
-		pane.fireEvent(new ChangeConsistencyEvent(parent));
+		parent.setConsistencyValue(cc.compute(createMatrix(), ccm));
+		pane.fireEvent(new ChangeConsistencyEvent());
 	}
 
 	private Matrix createMatrix() throws MalformedTreeException {
 		List<Criterium> children = tree.getChildren(lastShowed);
 		Matrix m = new Matrix(children.size(), children.size());
-
+		int i;
 		for (int j = 0; j < children.size(); j++) {
 			Criterium child = children.get(j);
 			Map<String, Double> values = child.getValues();
-			int i = 0;
+			i = 0;
 			double actual = values.get(child.getName());
 			for (Entry<String, Double> entry : values.entrySet()) {
-				double v = (double) entry.getValue();
-
-				// TODO to double
-
-				m.set(i, j, v / actual);
-				// System.out.println("ac: " + child.getName() + " " + actual +
-				// " " + v);
-				// System.out.print(v + " ");
+				m.set(i, j, entry.getValue() / actual);
 				i++;
 			}
 		}
-
-		for (int k = 0; k < m.getColumnDimension(); k++) {
-			for (int l = 0; l < m.getRowDimension(); l++) {
-
-				System.out.print(m.get(l, k) + " ");
-			}
-			System.out.println();
-		}
+		WindowAHP.showMatrix(m);
 		return m;
 	}
 
@@ -194,34 +146,15 @@ public class DataEnteringPart extends ViewPart {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				String regex = "(\\d{0,1}.\\d{0,5})|(\\d{0,2}.\\d{0,4})|(\\d{0,3}.\\d{0,3})|(\\d{0,4}.\\d{0,2})|(\\d{0,5}.\\d{0,1})";
-				if (newValue.matches(regex)) {// ("[1-9]+[0-9]*")) {
-					// Integer value = Integer.parseInt(newValue);
-					// Double.
-					Double value = Double.parseDouble(newValue);
-					// System.out.println("---- "+value);
-					changeEnteredValue(c, name, value);
+				if (newValue.matches(regex)) {
+					changeEnteredValue(c, name, Double.parseDouble(newValue));
 				} else {
 					nInput.setText(oldValue);
 				}
 			}
-
 		});
-
 		GridPane.setConstraints(nInput, i, j);
-
 		gridPane.getChildren().add(nInput);
-	}
-
-	public void refresh() {
-		if (lastShowed != null) {
-			try {
-				createInputTable(lastShowed);
-				calculateConsistency(lastShowed);
-				// showConsistency(lastShowed.getConsistencyValue());
-			} catch (MalformedTreeException e) {
-				showAlert(e);
-			}
-		}
 	}
 
 	public void showConsistency(double consistencyValue) {
@@ -238,7 +171,7 @@ public class DataEnteringPart extends ViewPart {
 				if (consistencyValue > Integer.MAX_VALUE) {
 					cv = String.format("%f", Double.POSITIVE_INFINITY);
 				} else {
-					cv = String.format("%2.4f", consistencyValue);
+					cv = String.format("%3.10f", consistencyValue);
 				}
 
 				// System.out.println(cv);
@@ -252,6 +185,37 @@ public class DataEnteringPart extends ViewPart {
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		}
+	}
+	
+	public void refresh() {
+		if (lastShowed != null) {
+			try {
+				createInputTable(lastShowed);
+				calculateConsistency(lastShowed);
+			} catch (MalformedTreeException e) {
+				showAlert(e);
+			}
+		}
+	}
+
+	private Pane arrangeScrollPaneContent() {
+		Pane vBox = new VBox();
+		arrangeGridPane();
+		arrangeConsistencyPane();
+		vBox.getChildren().addAll(gridPane, consistencyPane);
+		return vBox;
+	}
+
+	private void arrangeConsistencyPane() {
+		consistencyPane = new HBox();
+		consistencyPane.setAlignment(Pos.CENTER);
+		consistencyPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
+	}
+
+	private void arrangeGridPane() {
+		gridPane = createGridPane();
+		gridPane.setAlignment(Pos.CENTER);
+		gridPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
 	}
 
 }

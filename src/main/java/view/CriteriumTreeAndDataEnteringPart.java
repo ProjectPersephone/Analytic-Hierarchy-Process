@@ -35,6 +35,8 @@ import model.Goal;
 
 public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 
+	// TODO menu with clear
+
 	// private Goal goal;
 	// private List<Alternative> alternatives;
 	private Map<TreeBranch, Pane> treeBranchMap;
@@ -56,8 +58,13 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 	private final double defLeft = 2.;
 	private final double defRight = 2.;
 
-	public CriteriumTreeAndDataEnteringPart(CriteriumTree2 tree) {
+
+	public CriteriumTreeAndDataEnteringPart(CriteriumTree2 tree, Pane alternativesAndOptionsPart) {
 		super(tree);
+		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_CONSISTENCY, event -> {
+			handleConsistency(lastModifiedBranch);
+
+		});
 		createTreeBranchList();
 		criteriumIndex = 0;
 		pane = createPane();
@@ -77,15 +84,16 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 		dataEnteringPartBuilder = new DataEnteringPart(tree);
 		Pane dataEnteringPart = dataEnteringPartBuilder.getPart();
 		hBox.getChildren().addAll(criteriumTreePane, dataEnteringPart);
-		
-		
-//		public final void setOnCustomEvent(EventHandler<? super CustomEvent> value) {
-//		    this.addEventHandler(CustomEvent.CUSTOM, value);
-//		}
+
+		// public final void setOnCustomEvent(EventHandler<? super CustomEvent>
+		// value) {
+		// this.addEventHandler(CustomEvent.CUSTOM, value);
+		// }
 		dataEnteringPart.addEventHandler(ChangeConsistencyEvent.CHANGED_CONSISTENCY, event -> {
-			System.out.println(event.getGoal()+" || "+lastModifiedBranch.getCriterium());
-			handleConsistency(lastModifiedBranch, event.getGoal());
-			
+			// System.out.println(event.getGoal()+" ||
+			// "+lastModifiedBranch.getCriterium());
+			handleConsistency(lastModifiedBranch);
+
 		});
 
 		return hBox;
@@ -169,34 +177,31 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 
 	public void renameCriterium(TreeBranch treeBranch, String newName) {
 		try {
-			try {
-				tree.renameCriterium(treeBranch.getCriterium(), newName);
-
-			} catch (MalformedTreeException e) {
-				showAlert(e);
-			}
-			refresh();
+			tree.renameCriterium(treeBranch.getCriterium(), newName);
 		} catch (notFoundException e) {
 			showAlert(e);
+		} catch (MalformedTreeException e) {
+			showAlert(e);
 		}
+		refresh();
 	}
 
 	private void refresh() {
 		dataEnteringPartBuilder.refresh();
-//		handleConsistency(lastModifiedBranch, lastModifiedBranch.getCriterium());
+		// handleConsistency(lastModifiedBranch,
+		// lastModifiedBranch.getCriterium());
 	}
 
 	public void createComparisons(TreeBranch treeBranch) {
 		lastModifiedBranch = treeBranch;
 		dataEnteringPartBuilder.createInputTable(treeBranch.getCriterium());
-		handleConsistency(treeBranch, treeBranch.getCriterium());
+		handleConsistency(treeBranch);
 
 	}
 
-	private void handleConsistency(TreeBranch treeBranch, Goal g) {
-		// System.out.println(treeBranch.getCriterium().getConsistencyValue());
-		treeBranch.setConsistencyLook(tree.isConsistent(g));
-		dataEnteringPartBuilder.showConsistency(g.getConsistencyValue());
+	private void handleConsistency(TreeBranch treeBranch) {
+		treeBranch.setConsistencyLook(tree.isConsistent(treeBranch.getCriterium()));
+		dataEnteringPartBuilder.showConsistency(treeBranch.getCriterium().getConsistencyValue());
 	}
 
 }

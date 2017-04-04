@@ -35,6 +35,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 import model.Alternative;
+import model.Criterium;
 import model.CriteriumTree2;
 
 public class AlternativesAndOptionsPart extends ViewPart {
@@ -133,9 +134,11 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		tf.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				String regex =  "0{1}.\\d{0,12}";
+				String regex =  "[0-9]{0,3}.\\d{0,10}";
 				if (newValue.matches(regex)){
 					tree.setMaxConsistencyValue(Double.parseDouble(newValue));
+					pane.fireEvent(new ChangeConsistencyEvent());
+					//TODO refresh codition
 				} else {
 					tf.setText(oldValue);
 				}
@@ -268,7 +271,9 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					tfalternativeName.setText("");
 					
 				} catch (AlreadyExistsException | UnspecyfiedParameterException e) {
-					e.printStackTrace();
+					showAlert(e);
+				} catch (MalformedTreeException e) {
+					showAlert(e);
 				}
 			}
 		});
@@ -291,7 +296,9 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					createNewAlternative();
 					tfalternativeName.setText("");
 				} catch (AlreadyExistsException | UnspecyfiedParameterException e) {
-					e.printStackTrace();
+					showAlert(e);
+				} catch (MalformedTreeException e) {
+					showAlert(e);
 				}
 			}
 		});
@@ -300,7 +307,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		return tfalternativeName;
 	}
 
-	private Alternative createNewAlternative() throws AlreadyExistsException, UnspecyfiedParameterException {
+	private Alternative createNewAlternative() throws AlreadyExistsException, UnspecyfiedParameterException, MalformedTreeException {
 		String name = tfalternativeName.getText();
 		if (name.equals("")) {
 			throw new UnspecyfiedParameterException();
@@ -311,7 +318,8 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			}
 		}
 		Alternative a = new Alternative(name);
-		tree.addAlternative(a);
+		tree.addNewAlternative(a);
+//		System.out.println(tree.getAlternatives());
 		return a;
 	}
 }

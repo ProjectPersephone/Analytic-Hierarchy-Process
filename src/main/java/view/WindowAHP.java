@@ -11,8 +11,10 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import AHPSolver.AHPLogic;
+import Jama.Matrix;
 import exceptions.FirstStageMustBeGoalException;
 import exceptions.InvalidXMLStructureException;
+import exceptions.MalformedTreeException;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -38,6 +40,18 @@ import model.PriorityVector;
 import priorityVecorComputingMethods.PriorityVectorComputeMethod;
 
 public class WindowAHP extends Application {
+	public static void showMatrix(Matrix m) {
+		// TODO to delete!!!
+		System.out.println();
+		System.out.println("---Matrx---");
+		for (int k = 0; k < m.getColumnDimension(); k++) {
+			for (int l = 0; l < m.getRowDimension(); l++) {
+				System.out.print(m.get(l, k) + " ");
+			}
+			System.out.println();
+		}
+	}
+	
 	private final double sceneHeight = 650;
 	private final double sceneWidth = 1400;
 
@@ -66,10 +80,12 @@ public class WindowAHP extends Application {
 			primaryStage.show();
 		} catch (FirstStageMustBeGoalException e) {
 			showAlert(e);
+		} catch (MalformedTreeException e) {
+			showAlert(e);
 		}
 	}
 
-	private void showAlert(FirstStageMustBeGoalException e) {
+	private void showAlert(Exception e) {
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Error");
 		alert.setContentText(e.getMessage());

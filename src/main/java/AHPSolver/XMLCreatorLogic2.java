@@ -45,7 +45,7 @@ public class XMLCreatorLogic2 {
 	public String execute(String path, CriteriumTree2 cTree) throws FIleAlreadyExistsException, IOException,
 			ParserConfigurationException, TransformerException, MalformedTreeException {
 
-		createAlternatives(cTree.getAlternatives());
+		//createAlternatives(cTree.getAlternatives());//TODO other way of alternatives
 		createCriteria(cTree);
 		createXMLFile(path);
 		return path;

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><ahp><alternatives>
+<alternative name="a"/></alternatives><goal name="goal">
+<criteria c1="1.0" criterium2="1.0" criterium3="1.0" name="c1"><criteria a="1.0" name="a"/></criteria><criteria c1="1.0" criterium2="1.0" criterium3="1.0" name="criterium2"><criteria a="1.0" name="a"/></criteria><criteria c1="1.0" criterium2="1.0" criterium3="1.0" name="criterium3"><criteria a="2.0" name="a"/></criteria></goal>
+</ahp>

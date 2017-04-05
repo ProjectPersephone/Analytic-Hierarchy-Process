@@ -11,7 +11,7 @@ import org.xml.sax.SAXException;
 import AHPSolver.XMLCreatorLogic;
 import AHPSolver.XMLCreatorLogic2;
 import exceptions.AlreadyExistsException;
-import exceptions.FIleAlreadyExistsException;
+import exceptions.FileAlreadyExistsException;
 import exceptions.InvalidXMLStructureException;
 import exceptions.MalformedTreeException;
 import exceptions.UnspecyfiedParameterException;
@@ -47,10 +47,10 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 	public AlternativesAndOptionsPart(CriteriumTree2 tree) {
 		super(tree);
-		sourceFolder = "src/XML/";
+		sourceFolder = "XML/";//"src/XML/";
 		fileName = "testXML.xml";
-		
-//		System.out.println("bef: "+tree);
+
+		// System.out.println("bef: "+tree);
 		tree.setAlternatives(FXCollections.observableArrayList());
 		tree.setMaxConsistencyValue(0.1);
 		pane = createPane();
@@ -76,10 +76,14 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 		TextField tfpath = createFileTextField();
 		optionsPane.getChildren().add(tfpath);
-
-		Button addAlternativeButton = setCreateButton();
-		optionsPane.getChildren().add(addAlternativeButton);
 		
+//		Button addCreateXMLButton = setCreateXMLButton();
+//		optionsPane.getChildren().add(addCreateXMLButton);
+		
+
+		Button addAlternativeButton = setCreateXMLButton();
+		optionsPane.getChildren().add(addAlternativeButton);
+
 		TextField tfConsistencyValue = createMaxConsistencyValueTextField();
 		optionsPane.getChildren().add(tfConsistencyValue);
 
@@ -91,12 +95,11 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		return optionsPane;
 
 	}
-
-	private Button setCreateButton() {
+	private Button setCreateXMLButton() {
 		Button bCompute = new Button();
 		bCompute.setText("create");
-		GridPane.setConstraints(bCompute, 1, 2);
-//		System.out.println(tree);
+		GridPane.setConstraints(bCompute, 2, 1);
+		// System.out.println(tree);
 		bCompute.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -106,11 +109,11 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					String filePath = sourceFolder + fileName;
 					XMLCreatorLogic2 xml;
 					xml = new XMLCreatorLogic2();
-//					System.out.println(tree);
 					xml.execute(filePath, tree);
+					System.out.println("XML createrd");
 				} catch (ParserConfigurationException e) {
 					showAlert(e);
-				} catch (FIleAlreadyExistsException e) {
+				} catch (FileAlreadyExistsException e) {
 					showAlert(e);
 				} catch (IOException e) {
 					showAlert(e);
@@ -124,21 +127,23 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		});
 		return bCompute;
 	}
-	
+
+
+
 	private TextField createMaxConsistencyValueTextField() {
 		TextField tf = new TextField();
 		tf.setText(fileName);
 		tf.setPrefColumnCount(10);
-		
+
 		tf.setText(tree.getMaxConsistencyValue().toString());
 		tf.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				String regex =  "[0-9]{0,3}.\\d{0,10}";
-				if (newValue.matches(regex)){
+				String regex = "[0-9]{0,3}.\\d{0,10}";
+				if (newValue.matches(regex)) {
 					tree.setMaxConsistencyValue(Double.parseDouble(newValue));
-					pane.fireEvent(new ChangeConsistencyEvent());
-					//TODO refresh codition
+					pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_MAX_CONSISTENCY));
+					// TODO refresh codition
 				} else {
 					tf.setText(oldValue);
 				}
@@ -248,6 +253,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 			public void changed(ObservableValue<? extends Alternative> ov, Alternative old_val, Alternative new_val) {
 				// TODO delete alternative
+				//TODO pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
 			}
 		});
 
@@ -269,7 +275,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 				try {
 					createNewAlternative();
 					tfalternativeName.setText("");
-					
+
 				} catch (AlreadyExistsException | UnspecyfiedParameterException e) {
 					showAlert(e);
 				} catch (MalformedTreeException e) {
@@ -295,8 +301,10 @@ public class AlternativesAndOptionsPart extends ViewPart {
 				try {
 					createNewAlternative();
 					tfalternativeName.setText("");
-				} catch (AlreadyExistsException | UnspecyfiedParameterException e) {
+				} catch (AlreadyExistsException e) {
 					showAlert(e);
+				} catch (UnspecyfiedParameterException e) {
+					e.printStackTrace();
 				} catch (MalformedTreeException e) {
 					showAlert(e);
 				}
@@ -307,19 +315,20 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		return tfalternativeName;
 	}
 
-	private Alternative createNewAlternative() throws AlreadyExistsException, UnspecyfiedParameterException, MalformedTreeException {
+	private Alternative createNewAlternative()
+			throws AlreadyExistsException, UnspecyfiedParameterException, MalformedTreeException {
 		String name = tfalternativeName.getText();
 		if (name.equals("")) {
 			throw new UnspecyfiedParameterException();
 		}
 		for (Alternative alt : tree.getAlternatives()) {
 			if (alt.getName().equals(name)) {
-				throw new AlreadyExistsException();
+				throw new AlreadyExistsException("This alternative already exists");
 			}
 		}
 		Alternative a = new Alternative(name);
 		tree.addNewAlternative(a);
-//		System.out.println(tree.getAlternatives());
+		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
 		return a;
 	}
 }

@@ -19,7 +19,7 @@ public class CriteriumTree2 {
 	private Map<Goal, List<Criterium>> criteriaTree;
 	private Map<Goal, List<Criterium>> alternativesTree;
 	private Goal goal;
-	private List<Criterium> criteriumAlternativesList;
+	private List<Criterium> alternativeAsCriteriumList;
 	private List<Alternative> alternatives;
 
 	private Double maxConsistencyValue;
@@ -31,6 +31,7 @@ public class CriteriumTree2 {
 			this.criteriaTree = new HashMap<Goal, List<Criterium>>();
 			this.criteriaTree.put(goal, new ArrayList<Criterium>());
 			this.alternatives = alternatives;
+			alternativesTree = new HashMap<>();
 			prepareNewAlternatives();
 			this.maxConsistencyValue = 0.1;
 		} else {
@@ -39,11 +40,11 @@ public class CriteriumTree2 {
 	}
 
 	private void prepareNewAlternatives() throws MalformedTreeException {
-		alternativesTree = new HashMap<Goal, List<Criterium>>();
+		alternativeAsCriteriumList = new ArrayList<Criterium>();
 		Goal g = new Goal("tmp");
 		for (Alternative a : alternatives) {
 			Criterium newAlt = new Criterium(g.getId(), a.getName());
-			addNewCriteriumToList(criteriumAlternativesList, newAlt);
+			addNewCriteriumToListAndCriteriaValueList(alternativeAsCriteriumList, newAlt);
 		}
 
 		// TODO refresh comparations
@@ -53,50 +54,84 @@ public class CriteriumTree2 {
 	public void addNewAlternative(Alternative a) throws MalformedTreeException {
 		alternatives.add(a);
 		Goal g = new Goal("tmp");
-		addNewCriteriumToList(criteriumAlternativesList, new Criterium(g.getId(), a.getName()));
+		Criterium c = new Criterium(g.getId(), a.getName());
+		addNewCriteriumToListAndCriteriaValueList(alternativeAsCriteriumList, c);
+
+		for(Entry<Goal, List<Criterium>> e : alternativesTree.entrySet()){
+			Criterium newC = new Criterium(c);
+			newC.setParentId(e.getKey().getId());
+			addNewCriteriumToListAndCriteriaValueList(e.getValue(), newC);
+		}
+
 		// TODO refresh comparations
 	}
 
-	public List<Criterium> getCriteriumAlternatives(Goal g) throws MalformedTreeException {
-		// if (getChildren(g).size()>0) {
-		// throw new MalformedTreeException();
-		// }
-		// List<Criterium> children = new ArrayList<Criterium>();
-		// Criterium c = new Criterium(g.getId(), a.getName());
-		// children.add(c);
-		// }
-		// System.out.println(children);
-		// criteriaTree.put(g, children);
-		// return children;
-		return null;
+	public List<Criterium> getChildren(Goal g) throws MalformedTreeException {
+		if (criteriaTree.containsKey(g)) {
+			List<Criterium> children = criteriaTree.get(g);
+			if (!children.isEmpty()) {
+				return children;
+			} else {
+				if (alternativesTree.containsKey(g)) {
+					children = alternativesTree.get(g);
+					if (!children.isEmpty()) {
+						return children;
+					}
+				} else {
+					return createAlternativesAsCriterium(g);
+				}
+			}
+		}
+		return new ArrayList<Criterium>(); // criterium have no children
+
+	}
+
+	private List<Criterium> createAlternativesAsCriterium(Goal g) throws MalformedTreeException {
+		List<Criterium> children = new ArrayList<>();
+		for (Criterium c : alternativeAsCriteriumList) {
+			Criterium newC = new Criterium(c);
+			newC.setParentId(g.getId());
+			children.add(newC);
+		}
+		alternativesTree.put(g, children);
+		return children;
 	}
 
 	public void addCriteriumTo(Goal parent, Criterium newCriterium) throws MalformedTreeException {
-		if (newCriterium.getParentId() == parent.getId()) {
-			List<Criterium> children = criteriaTree.get(parent);
-			addNewCriteriumToList(children, newCriterium);
-			criteriaTree.put(newCriterium, new ArrayList<Criterium>());
-		} else {
+		if (newCriterium.getParentId() != parent.getId()) {
 			throw new MalformedTreeException();
 		}
+		if (alternativesTree.containsKey(parent)) {
+			alternativesTree.remove(parent);
+			System.out.println("----- remove alternative list CT2 --- " + getCriteriumAlternativesList().size());
+		}
+
+		List<Criterium> children = criteriaTree.get(parent);
+		addNewCriteriumToListAndCriteriaValueList(children, newCriterium);
+		criteriaTree.put(newCriterium, new ArrayList<Criterium>());
 	}
 
 	public Goal getParent(Criterium c) throws notFoundException {
-		for (Entry<Goal, List<Criterium>> entry : criteriaTree.entrySet()) {
-			List<Criterium> value = entry.getValue();
-			if (value.contains(c)) {
-				return entry.getKey();
-			}
+		Optional<Goal> goal = searchForParent(criteriaTree, c);
+		if (goal.isPresent()) {
+			return goal.get();
+		}
+		goal = searchForParent(alternativesTree, c);
+		if (goal.isPresent()) {
+			return goal.get();
 		}
 		throw new notFoundException();
+
 	}
 
-	public List<Criterium> getChildren(Goal g) throws MalformedTreeException {
-		List<Criterium> children = criteriaTree.get(g);
-		if (children == null) {
-			throw new MalformedTreeException();
+	private Optional<Goal> searchForParent(Map<Goal, List<Criterium>> map, Criterium c) {
+		for (Entry<Goal, List<Criterium>> entry : map.entrySet()) {
+			List<Criterium> value = entry.getValue();
+			if (value.contains(c)) {
+				return Optional.of(entry.getKey());
+			}
 		}
-		return children;
+		return Optional.empty();
 	}
 
 	public void deleteCriterium(Criterium c) throws MalformedTreeException {
@@ -137,8 +172,11 @@ public class CriteriumTree2 {
 		}
 	}
 
-	private void addNewCriteriumToList(List<Criterium> criteriumList, Criterium newCriterium) {
+	private void addNewCriteriumToListAndCriteriaValueList(List<Criterium> criteriumList, Criterium newCriterium) {
 		criteriumList.add(newCriterium);
+		addNewCriteriumToCriteriaValueList(criteriumList, newCriterium);
+	}
+	private void addNewCriteriumToCriteriaValueList(List<Criterium> criteriumList, Criterium newCriterium) {
 		for (Criterium alt : criteriumList) {
 			alt.addValuesOf(newCriterium.getName(), 1);
 			newCriterium.addValuesOf(alt.getName(), 1);
@@ -166,7 +204,7 @@ public class CriteriumTree2 {
 	}
 
 	public List<Criterium> getCriteriumAlternativesList() {
-		return criteriumAlternativesList;
+		return alternativeAsCriteriumList;
 	}
 
 	public List<Alternative> getAlternatives() {

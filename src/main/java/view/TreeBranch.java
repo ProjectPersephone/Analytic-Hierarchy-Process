@@ -25,16 +25,27 @@ public class TreeBranch extends StackPane {
 	private CriteriumTreeAndDataEnteringPart criteriumTreeAndDataEnteringPart;
 	private Goal criterium;
 	private Label lName;
+	private boolean isComparating;
 
-	private final static Border defBorder = new Border(
+	private final static Border defBorderOn = new Border(
+			new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2.)));
+	private final static Border defBorderOff = new Border(
 			new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT));
 
 	public TreeBranch(Goal goal, CriteriumTreeAndDataEnteringPart criteriumTreeAndDataEnteringPart) {
 		this.criteriumTreeAndDataEnteringPart = criteriumTreeAndDataEnteringPart;
 		this.criterium = goal;
+		this.isComparating = false;
 		changeName(goal);
 		createBorder();
 		setBranchMenu();
+		setConsistencyLook(true);
+
+	}
+
+	public void setIsComparing(boolean isCmp) {
+		isComparating = isCmp;
+		createBorder();
 	}
 
 	private void setBranchMenu() {
@@ -48,7 +59,7 @@ public class TreeBranch extends StackPane {
 
 		MenuItem compItem = createCompItem();
 		contextMenu.getItems().add(compItem);
-		
+
 		if (criterium instanceof Criterium) {
 			MenuItem delChildItem = createDelItem();
 			contextMenu.getItems().add(delChildItem);
@@ -122,6 +133,8 @@ public class TreeBranch extends StackPane {
 			@Override
 			public void handle(ActionEvent event) {
 				criteriumTreeAndDataEnteringPart.createComparisons(TreeBranch.this);
+				fireEvent(new ChangeComputingUnit(ChangeComputingUnit.CHANGED_COMPUTING_BRANCH));
+				TreeBranch.this.setIsComparing(true);
 			}
 		});
 		return addChildItem;
@@ -136,7 +149,12 @@ public class TreeBranch extends StackPane {
 	}
 
 	private void createBorder() {
-		this.setBorder(defBorder);
+		if (isComparating) {
+			this.setBorder(defBorderOn);
+		} else {
+			this.setBorder(defBorderOff);
+		}
+
 	}
 
 	private void changeName(Goal goal) {
@@ -146,12 +164,11 @@ public class TreeBranch extends StackPane {
 	}
 
 	public void setConsistencyLook(boolean consistent) {
-		if(consistent){
+		if (consistent) {
 			this.setBackground(new Background(new BackgroundFill(Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)));
+		} else {
+			this.setBackground(
+					new Background(new BackgroundFill(Color.PALEVIOLETRED, CornerRadii.EMPTY, Insets.EMPTY)));
 		}
-		else{
-			this.setBackground(new Background(new BackgroundFill(Color.PALEVIOLETRED, CornerRadii.EMPTY, Insets.EMPTY)));
-		}
-		
 	}
 }

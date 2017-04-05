@@ -22,7 +22,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import exceptions.FIleAlreadyExistsException;
+import exceptions.FileAlreadyExistsException;
 import exceptions.MalformedTreeException;
 import model.Alternative;
 import model.Criterium;
@@ -42,10 +42,10 @@ public class XMLCreatorLogic2 {
 		rootElement = doc.createElement("ahp");
 	}
 
-	public String execute(String path, CriteriumTree2 cTree) throws FIleAlreadyExistsException, IOException,
+	public String execute(String path, CriteriumTree2 cTree) throws FileAlreadyExistsException, IOException,
 			ParserConfigurationException, TransformerException, MalformedTreeException {
 
-		//createAlternatives(cTree.getAlternatives());//TODO other way of alternatives
+		createAlternatives(cTree.getAlternatives());
 		createCriteria(cTree);
 		createXMLFile(path);
 		return path;
@@ -54,17 +54,24 @@ public class XMLCreatorLogic2 {
 
 	private void createCriteria(CriteriumTree2 cTree) throws MalformedTreeException {
 
-		Goal g = cTree.getGoal();
-		Element element = createGoal(g);
+		System.out.println(cTree);
+		// Goal g = cTree.getGoal();
+		// Element goalElement = createGoal(g);
 
 		for (Entry<Goal, List<Criterium>> entry : cTree.getCriteriaTree().entrySet()) {
 			// List<Criterium> value = entry.getValue();
-
-			List<Criterium> children = cTree.getChildren(entry.getKey());
-			for (Criterium c : children) {
-				Element e = createCriterium(c);
-				element.appendChild(e);
-			}
+			Goal mainC = entry.getKey();
+//			List<Criterium> children = cTree.getChildren(mainC);
+//
+//			Element newElement = createElement(mainC);
+//			// goalElement.appendChild(newElement);
+//			for (Criterium c : children) {
+//				Element e = createCriterium(c);
+//				System.out.println(newElement + " " + mainC + " appendChild  " + e + " " + c);
+//				newElement.appendChild(e);
+//			}
+			Element newElement = createElement(mainC);
+			createRecursiveElements(cTree, mainC, newElement);
 
 		}
 
@@ -80,6 +87,17 @@ public class XMLCreatorLogic2 {
 		// }
 
 	}
+	
+	private void createRecursiveElements(CriteriumTree2 cTree, Goal criterium, Element element) throws MalformedTreeException{
+		
+		List<Criterium> children = cTree.getChildren(criterium);
+		for (Criterium c : children) {
+			Element e = createCriterium(c);
+			element.appendChild(e);
+			createRecursiveElements(cTree, c, e);
+		}
+		
+	}
 
 	private Map<Criterium, Element> createCriteriumElementMap(CriteriumTree cTree) {
 		Map<Criterium, Element> ceMap = new HashMap<Criterium, Element>();
@@ -94,6 +112,16 @@ public class XMLCreatorLogic2 {
 			i++;
 		}
 		return ceMap;
+	}
+
+	private Element createElement(Goal c) {
+		if (c instanceof Criterium) {
+			System.out.println("crit: " + c);
+			return createCriterium((Criterium) c);
+		} else {
+			System.out.println("goal: " + c);
+			return createGoal(c);
+		}
 	}
 
 	private Element createCriterium(Criterium c) {
@@ -117,9 +145,9 @@ public class XMLCreatorLogic2 {
 	}
 
 	private void createXMLFile(String path)
-			throws FIleAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
+			throws FileAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
 		if (checkFileExists(path)) {
-			throw new FIleAlreadyExistsException();
+			throw new FileAlreadyExistsException();
 		}
 
 		rootElement.appendChild(doc.createTextNode("\n"));

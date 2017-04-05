@@ -44,7 +44,7 @@ public class ProcessingPart extends ViewPart {
 
 	public ProcessingPart(CriteriumTree2 tree) {
 		super(tree);
-		this.sourceFolder = "src/XML/";
+		this.sourceFolder = "XML/";
 		this.fileName = "testXML.xml";
 		this.computingMethod = PriorityVectorComputeMethod.eigenvectorMethod();
 		pane = createPane();

@@ -43,13 +43,14 @@ public class WindowAHP extends Application {
 	public static void showMatrix(Matrix m) {
 		// TODO to delete!!!
 		System.out.println();
-		System.out.println("---Matrx---");
+		System.out.println("---Matrx--- col: "+m.getColumnDimension()+" row: "+m.getRowDimension());
 		for (int k = 0; k < m.getColumnDimension(); k++) {
 			for (int l = 0; l < m.getRowDimension(); l++) {
 				System.out.print(m.get(l, k) + " ");
 			}
 			System.out.println();
 		}
+		System.out.println("---Matrix end---");
 	}
 	
 	private final double sceneHeight = 650;

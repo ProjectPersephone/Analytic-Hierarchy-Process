@@ -19,6 +19,11 @@ public class Criterium extends Alternative {
 		this.parentId = parentId;
 	}
 
+	public Criterium(Criterium c) throws MalformedTreeException {
+		this(c.getParentId(), c.getName());
+		this.values = new TreeMap<String, Double>(c.getValues());
+	}
+
 	public int getParentId() {
 		return parentId;
 	}

@@ -34,6 +34,7 @@ import model.Goal;
 public class DataEnteringPart extends ViewPart {
 	private GridPane gridPane;
 	private HBox consistencyPane;
+	private VBox labelPane;
 	private Goal lastShowed;
 	private ConsistencyComputeMethod ccm;
 
@@ -60,17 +61,13 @@ public class DataEnteringPart extends ViewPart {
 	}
 
 	public void createInputTable(Goal criterium) {
+		showLabel(criterium);
 		lastShowed = criterium;
 		gridPane.getChildren().clear();
 		try {
 			List<Criterium> cList = tree.getChildren(criterium);
-			if (cList.size()>0) {
-				System.out.println("has children");
-				createInputs(cList);
-			} else {
-				System.out.println("do not have children");
-				createInputs(tree.getCriteriumAlternatives(criterium));
-			}
+			createInputs(cList);
+
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		}
@@ -104,11 +101,9 @@ public class DataEnteringPart extends ViewPart {
 	public void changeEnteredValue(Criterium c, String name, Double value) {
 		try {
 			tree.changeValue(c, name, value);
-			Goal parent = tree.getParent(c);
-			calculateConsistency(parent);
+//			Goal parent = tree.getParent(c);
+			calculateConsistency(lastShowed);
 		} catch (MalformedTreeException e) {
-			showAlert(e);
-		} catch (notFoundException e) {
 			showAlert(e);
 		}
 	}
@@ -116,7 +111,7 @@ public class DataEnteringPart extends ViewPart {
 	private void calculateConsistency(Goal parent) throws MalformedTreeException {
 		ConsistencyCalculator cc = new ConsistencyCalculator();
 		parent.setConsistencyValue(cc.compute(createMatrix(), ccm));
-		pane.fireEvent(new ChangeConsistencyEvent());
+		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_SINGLE_CONSISTENCY));
 	}
 
 	private Matrix createMatrix() throws MalformedTreeException {
@@ -187,6 +182,13 @@ public class DataEnteringPart extends ViewPart {
 		}
 	}
 	
+	public void showLabel(Goal criterium){
+		labelPane.getChildren().clear();
+		Label cNameLabel = new Label(criterium.getName());
+		cNameLabel.setFont(new Font(20));
+		labelPane.getChildren().add(cNameLabel);
+	}
+
 	public void refresh() {
 		if (lastShowed != null) {
 			try {
@@ -200,22 +202,33 @@ public class DataEnteringPart extends ViewPart {
 
 	private Pane arrangeScrollPaneContent() {
 		Pane vBox = new VBox();
+
+		arrangeLabelPane();
 		arrangeGridPane();
 		arrangeConsistencyPane();
-		vBox.getChildren().addAll(gridPane, consistencyPane);
+
+		vBox.getChildren().addAll(labelPane, gridPane, consistencyPane);
 		return vBox;
 	}
 
-	private void arrangeConsistencyPane() {
-		consistencyPane = new HBox();
-		consistencyPane.setAlignment(Pos.CENTER);
-		consistencyPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
+	private void arrangeLabelPane() {
+		labelPane = new VBox();
+		labelPane.setMinWidth(200);
+		labelPane.setAlignment(Pos.BOTTOM_CENTER);
+//		labelPane.setAlignment(Pos.BASELINE_CENTER);
+		labelPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
 	}
 
 	private void arrangeGridPane() {
 		gridPane = createGridPane();
 		gridPane.setAlignment(Pos.CENTER);
 		gridPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
+	}
+
+	private void arrangeConsistencyPane() {
+		consistencyPane = new HBox();
+		consistencyPane.setAlignment(Pos.CENTER);
+		consistencyPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
 	}
 
 }

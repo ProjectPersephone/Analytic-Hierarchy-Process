@@ -19,7 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import exceptions.FIleAlreadyExistsException;
+import exceptions.FileAlreadyExistsException;
 import exceptions.FirstStageMustBeGoalException;
 import exceptions.InvalidParentIdInTreeException;
 import exceptions.MalformedTreeException;
@@ -42,7 +42,7 @@ public class XMLCreatorLogicTest {
 	@Test
 	public void createXMLTest()
 			throws FirstStageMustBeGoalException, MalformedTreeException, ParserConfigurationException,
-			FIleAlreadyExistsException, IOException, TransformerException, InvalidParentIdInTreeException {
+			FileAlreadyExistsException, IOException, TransformerException, InvalidParentIdInTreeException {
 		Goal goal = new Goal("goal");
 		Alternative alt1 = new Alternative("a1");
 		Alternative alt2 = new Alternative("a2");

@@ -22,7 +22,7 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import exceptions.FIleAlreadyExistsException;
+import exceptions.FileAlreadyExistsException;
 import model.Alternative;
 import model.Criterium;
 import model.CriteriumTree;
@@ -41,7 +41,7 @@ public class XMLCreatorLogic {
 	}
 
 	public String execute(String path, CriteriumTree cTree)
-			throws FIleAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
+			throws FileAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
 
 		createAlternatives(cTree.getAlternatives());
 		createCriteria(cTree);
@@ -103,9 +103,9 @@ public class XMLCreatorLogic {
 	}
 
 	private void createXMLFile(String path)
-			throws FIleAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
+			throws FileAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
 		if (checkFileExists(path)) {
-			throw new FIleAlreadyExistsException();
+			throw new FileAlreadyExistsException();
 		}
 
 		rootElement.appendChild(doc.createTextNode("\n"));

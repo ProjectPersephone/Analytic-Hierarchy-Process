@@ -46,9 +46,6 @@ public class CriteriumTree2 {
 			Criterium newAlt = new Criterium(g.getId(), a.getName());
 			addNewCriteriumToListAndCriteriaValueList(alternativeAsCriteriumList, newAlt);
 		}
-
-		// TODO refresh comparations
-
 	}
 
 	public void addNewAlternative(Alternative a) throws MalformedTreeException {
@@ -57,13 +54,32 @@ public class CriteriumTree2 {
 		Criterium c = new Criterium(g.getId(), a.getName());
 		addNewCriteriumToListAndCriteriaValueList(alternativeAsCriteriumList, c);
 
-		for(Entry<Goal, List<Criterium>> e : alternativesTree.entrySet()){
+		for (Entry<Goal, List<Criterium>> e : alternativesTree.entrySet()) {
 			Criterium newC = new Criterium(c);
 			newC.setParentId(e.getKey().getId());
 			addNewCriteriumToListAndCriteriaValueList(e.getValue(), newC);
 		}
+	}
 
-		// TODO refresh comparations
+	public void deleteAlternative(Alternative new_val) {
+		alternatives.remove(new_val);
+		deleteAlternativeFromListAndCriteriumValue(alternativeAsCriteriumList, new_val);
+		for (Entry<Goal, List<Criterium>> e : alternativesTree.entrySet()) {
+			deleteAlternativeFromListAndCriteriumValue(e.getValue(), new_val);
+		}
+
+	}
+
+	private void deleteAlternativeFromListAndCriteriumValue(List<Criterium> cl, Alternative new_val) {
+		Criterium toRemove = null;
+		for (Criterium c : cl) {
+			if (c.getName().equals(new_val.getName())) {
+				toRemove = c;
+			} else {
+				c.removeValueOf(new_val.getName());
+			}
+		}
+		cl.remove(toRemove);
 	}
 
 	public List<Criterium> getChildren(Goal g) throws MalformedTreeException {
@@ -176,6 +192,7 @@ public class CriteriumTree2 {
 		criteriumList.add(newCriterium);
 		addNewCriteriumToCriteriaValueList(criteriumList, newCriterium);
 	}
+
 	private void addNewCriteriumToCriteriaValueList(List<Criterium> criteriumList, Criterium newCriterium) {
 		for (Criterium alt : criteriumList) {
 			alt.addValuesOf(newCriterium.getName(), 1);

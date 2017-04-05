@@ -1,35 +1,19 @@
 package view;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import exceptions.FirstStageMustBeGoalException;
 import exceptions.MalformedTreeException;
 import exceptions.notFoundException;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import model.Alternative;
 import model.Criterium;
-import model.CriteriumTree;
 import model.CriteriumTree2;
 import model.Goal;
 
@@ -58,23 +42,22 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 	private final double defLeft = 2.;
 	private final double defRight = 2.;
 
-
 	public CriteriumTreeAndDataEnteringPart(CriteriumTree2 tree, Pane alternativesAndOptionsPart) {
 		super(tree);
 		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_MAX_CONSISTENCY, event -> {
 			handleConsistenyOfTree();
-			//TODO max consistency changed
-//			handleConsistency(lastModifiedBranch);
+			// TODO max consistency changed
+			// handleConsistency(lastModifiedBranch);
 			System.out.println("TODO max consistency changed");
-//			refresh();
+			// refresh();
 		});
 		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA, event -> {
-			//TODO max consistency changed
-//			handleConsistency(lastModifiedBranch);
-//			handleConsistenyOfTree();
+			// TODO max consistency changed
+			// handleConsistency(lastModifiedBranch);
+			// handleConsistenyOfTree();
 			refresh();
 			System.out.println("TODO whole stage change changed");
-//			refresh();
+			// refresh();
 		});
 		createTreeBranchList();
 		criteriumIndex = 0;
@@ -83,7 +66,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 	}
 
 	private void handleConsistenyOfTree() {
-		for(Entry<TreeBranch, Pane> e : treeBranchMap.entrySet()){
+		for (Entry<TreeBranch, Pane> e : treeBranchMap.entrySet()) {
 			handleConsistency(e.getKey());
 		}
 	}
@@ -102,7 +85,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 		Pane dataEnteringPart = dataEnteringPartBuilder.getPart();
 		hBox.getChildren().addAll(criteriumTreePane, dataEnteringPart);
 		dataEnteringPart.addEventHandler(ChangeConsistencyEvent.CHANGED_SINGLE_CONSISTENCY, event -> {
-			//TODO max single changed
+			// TODO max single changed
 			System.out.println("TODO single consistency changed");
 			handleConsistency(lastModifiedBranch);
 
@@ -133,7 +116,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 		TreeBranch tb = new TreeBranch(c, this);
 		tb.addEventHandler(ChangeComputingUnit.CHANGED_COMPUTING_BRANCH, event -> {
 			handleConsistenyOfTree();
-			for(Entry<TreeBranch, Pane> e : treeBranchMap.entrySet()){
+			for (Entry<TreeBranch, Pane> e : treeBranchMap.entrySet()) {
 				e.getKey().setIsComparing(false);
 			}
 		});

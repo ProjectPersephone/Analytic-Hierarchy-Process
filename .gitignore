@@ -1,7 +1,7 @@
 # bin, build, XML folders
-bin/**
-XML/**
-build/**
+bin/
+XML/
+build/
 
 # Compiled class file
 *.class

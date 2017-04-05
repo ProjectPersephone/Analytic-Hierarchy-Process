@@ -2,6 +2,7 @@ package model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import exceptions.MalformedTreeException;
@@ -13,7 +14,7 @@ public class Criterium extends Alternative {
 
 	public Criterium(int parentId, String name) throws MalformedTreeException {
 		super(name);
-		values = new TreeMap<String, Double>();
+		values = new HashMap<String, Double>();
 
 		values.put(name, 1.);
 		this.parentId = parentId;
@@ -21,7 +22,7 @@ public class Criterium extends Alternative {
 
 	public Criterium(Criterium c) throws MalformedTreeException {
 		this(c.getParentId(), c.getName());
-		this.values = new TreeMap<String, Double>(c.getValues());
+		this.values = new HashMap<String, Double>(c.getValues());
 	}
 
 	public int getParentId() {
@@ -62,5 +63,13 @@ public class Criterium extends Alternative {
 
 	public void addValuesOf(String name, double value) {
 		values.put(name, value);
+	}
+
+	public void removeValueOf(String name) {
+		for(Entry<String, Double> e : values.entrySet()){
+			if(e.getKey().equals(name)){
+				values.remove(e);
+			}
+		}
 	}
 }

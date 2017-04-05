@@ -61,7 +61,7 @@ public class DataEnteringPart extends ViewPart {
 	}
 
 	public void createInputTable(Goal criterium) {
-		showLabel(criterium);
+		showMainLabel(criterium);
 		lastShowed = criterium;
 		gridPane.getChildren().clear();
 		try {
@@ -101,7 +101,6 @@ public class DataEnteringPart extends ViewPart {
 	public void changeEnteredValue(Criterium c, String name, Double value) {
 		try {
 			tree.changeValue(c, name, value);
-//			Goal parent = tree.getParent(c);
 			calculateConsistency(lastShowed);
 		} catch (MalformedTreeException e) {
 			showAlert(e);
@@ -168,13 +167,7 @@ public class DataEnteringPart extends ViewPart {
 				} else {
 					cv = String.format("%3.10f", consistencyValue);
 				}
-
-				// System.out.println(cv);
-				Text value = new Text(cv);// String.format("%.2f",
-											// consistencyValue));
-
-				// GridPane.setConstraints(value, 2, next);
-
+				Text value = new Text(cv);
 				consistencyPane.getChildren().addAll(c, value);
 			}
 		} catch (MalformedTreeException e) {
@@ -182,10 +175,10 @@ public class DataEnteringPart extends ViewPart {
 		}
 	}
 	
-	public void showLabel(Goal criterium){
+	public void showMainLabel(Goal criterium){
 		labelPane.getChildren().clear();
 		Label cNameLabel = new Label(criterium.getName());
-		cNameLabel.setFont(new Font(20));
+		cNameLabel.setFont(Font.font("Verdena", FontWeight.EXTRA_BOLD, 20));
 		labelPane.getChildren().add(cNameLabel);
 	}
 
@@ -213,9 +206,7 @@ public class DataEnteringPart extends ViewPart {
 
 	private void arrangeLabelPane() {
 		labelPane = new VBox();
-		labelPane.setMinWidth(200);
 		labelPane.setAlignment(Pos.BOTTOM_CENTER);
-//		labelPane.setAlignment(Pos.BASELINE_CENTER);
 		labelPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
 	}
 

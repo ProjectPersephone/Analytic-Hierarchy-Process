@@ -1,26 +1,21 @@
 package view;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.xml.sax.SAXException;
-
-import AHPSolver.XMLCreatorLogic;
 import AHPSolver.XMLCreatorLogic2;
 import exceptions.AlreadyExistsException;
 import exceptions.FileAlreadyExistsException;
-import exceptions.InvalidXMLStructureException;
 import exceptions.MalformedTreeException;
 import exceptions.UnspecyfiedParameterException;
+import exceptions.WrongFileNameException;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -35,22 +30,19 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 import model.Alternative;
-import model.Criterium;
 import model.CriteriumTree2;
 
 public class AlternativesAndOptionsPart extends ViewPart {
 	private String sourceFolder;
 	private String fileName;
-
+	private ListView<Alternative> list;
 	// private String alternativeName;
 	private TextField tfalternativeName;
 
 	public AlternativesAndOptionsPart(CriteriumTree2 tree) {
 		super(tree);
-		sourceFolder = "XML/";//"src/XML/";
+		sourceFolder = "XML/";
 		fileName = "testXML.xml";
-
-		// System.out.println("bef: "+tree);
 		tree.setAlternatives(FXCollections.observableArrayList());
 		tree.setMaxConsistencyValue(0.1);
 		pane = createPane();
@@ -71,15 +63,13 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 	private Pane getOptionsPane() {
 		GridPane optionsPane = createGridPane();
+
 		Label lOptions = createOptionsLabel();
 		optionsPane.getChildren().add(lOptions);
 
+		// TODO path label
 		TextField tfpath = createFileTextField();
 		optionsPane.getChildren().add(tfpath);
-		
-//		Button addCreateXMLButton = setCreateXMLButton();
-//		optionsPane.getChildren().add(addCreateXMLButton);
-		
 
 		Button addAlternativeButton = setCreateXMLButton();
 		optionsPane.getChildren().add(addAlternativeButton);
@@ -87,19 +77,17 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		TextField tfConsistencyValue = createMaxConsistencyValueTextField();
 		optionsPane.getChildren().add(tfConsistencyValue);
 
-		// TODO creating file (source)
-		// TODO consistency value
 		// TODO consistency method
 		// TODO (optional) adding values method
 
 		return optionsPane;
 
 	}
+
 	private Button setCreateXMLButton() {
 		Button bCompute = new Button();
 		bCompute.setText("create");
 		GridPane.setConstraints(bCompute, 2, 1);
-		// System.out.println(tree);
 		bCompute.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -107,10 +95,16 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 				try {
 					String filePath = sourceFolder + fileName;
-					XMLCreatorLogic2 xml;
-					xml = new XMLCreatorLogic2();
-					xml.execute(filePath, tree);
-					System.out.println("XML createrd");
+					String regex = "^(\\/{0,1}[a-zA-Z0-9-_]+)+\\.xml$";
+					if (filePath.matches(regex)) {
+						XMLCreatorLogic2 xml;
+						xml = new XMLCreatorLogic2();
+						xml.execute(filePath, tree);
+						System.out.println("XML createrd");
+					} else {
+						throw new WrongFileNameException("File path is invalid.");
+					}
+
 				} catch (ParserConfigurationException e) {
 					showAlert(e);
 				} catch (FileAlreadyExistsException e) {
@@ -121,14 +115,14 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					showAlert(e);
 				} catch (MalformedTreeException e) {
 					showAlert(e);
+				} catch (WrongFileNameException e) {
+					showAlert(e);
 				}
 
 			}
 		});
 		return bCompute;
 	}
-
-
 
 	private TextField createMaxConsistencyValueTextField() {
 		TextField tf = new TextField();
@@ -139,11 +133,10 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		tf.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				String regex = "[0-9]{0,3}.\\d{0,10}";
+				String regex = "[0-9]{0,3}\\.{0,1}\\d{0,10}";
 				if (newValue.matches(regex)) {
 					tree.setMaxConsistencyValue(Double.parseDouble(newValue));
 					pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_MAX_CONSISTENCY));
-					// TODO refresh codition
 				} else {
 					tf.setText(oldValue);
 				}
@@ -156,29 +149,21 @@ public class AlternativesAndOptionsPart extends ViewPart {
 	}
 
 	private TextField createFileTextField() {
-		TextField tfFileName = new TextField();
-		tfFileName.setText(fileName);
-		tfFileName.setPrefColumnCount(10);
-		tfFileName.setOnKeyReleased(new EventHandler<Event>() {
+		TextField tf = new TextField();
+		tf.setText(fileName);
+		tf.setPrefColumnCount(10);
+
+		tf.textProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void handle(Event event) {
-
-				// TODO REGEX
-				fileName = tfFileName.getText();
-			}
-		});
-
-		tfFileName.setOnAction(new EventHandler<ActionEvent>() {
-
-			@Override
-			public void handle(ActionEvent event) {
-				// TODO
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				fileName = tf.getText();
 
 			}
+
 		});
 
-		GridPane.setConstraints(tfFileName, 1, 1);
-		return tfFileName;
+		GridPane.setConstraints(tf, 1, 1);
+		return tf;
 	}
 
 	private Label createOptionsLabel() {
@@ -207,11 +192,14 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		Button addAlternativeButton = createAddAlternativeButton();
 		alternativesPane.getChildren().add(addAlternativeButton);
 
+		Button removeAlternativeButton = createRemoveAlternativeButton();
+		alternativesPane.getChildren().add(removeAlternativeButton);
+
 		return alternativesPane;
 	}
 
 	private ListView<Alternative> createAlternativesList() {
-		ListView<Alternative> list = new ListView<Alternative>();
+		list = new ListView<Alternative>();
 		list.setItems((ObservableList<Alternative>) tree.getAlternatives());
 		list.setMaxHeight(120);
 		list.setCellFactory(new Callback<ListView<Alternative>, ListCell<Alternative>>() {
@@ -222,25 +210,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					protected void updateItem(Alternative item, boolean empty) {
 						super.updateItem(item, empty);
 						if (item != null) {
-							// GridPane grid = new GridPane();
-							// grid.setPadding(new Insets(10, 0, 10, 0));
-							//
-							// ColumnConstraints alt = new ColumnConstraints();
-							// alt.setHalignment(HPos.RIGHT);
-							// grid.getColumnConstraints().add(alt);
-							//
-							// ColumnConstraints btn = new ColumnConstraints();
-							// btn.setHalignment(HPos.LEFT);
-							// grid.getColumnConstraints().add(btn);
-							//
 							setText(item.getName());
-							// Button deleteButton = new Button("delete");
-							//
-							// GridPane.setConstraints(new Text(item.getName()),
-							// 0, 0);
-							// GridPane.setConstraints(deleteButton, 1, 0);
-							// getChildren().add(grid);
-							// set
 						}
 					}
 				};
@@ -249,14 +219,21 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		GridPane.setConstraints(list, 0, 2);
 		VBox.setVgrow(list, Priority.ALWAYS);
 
-		list.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Alternative>() {
-
-			public void changed(ObservableValue<? extends Alternative> ov, Alternative old_val, Alternative new_val) {
-				// TODO delete alternative
-				//TODO pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
-			}
-		});
-
+		// list.getSelectionModel().selectedItemProperty().addListener(new
+		// ChangeListener<Alternative>() {
+		//
+		// public void changed(ObservableValue<? extends Alternative> ov,
+		// Alternative old_val, Alternative new_val) {
+		// System.out.println(old_val+" "+new_val);
+		//// list.getItems().remove(index);
+		//// tree.deleteAlternative(new_val);
+		//// list.refresh();
+		// // TODO delete alternative
+		// // TODO pane.fireEvent(new
+		// //
+		// ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
+		// }
+		// });
 		return list;
 	}
 
@@ -272,18 +249,30 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 			@Override
 			public void handle(ActionEvent event) {
-				try {
-					createNewAlternative();
-					tfalternativeName.setText("");
-
-				} catch (AlreadyExistsException | UnspecyfiedParameterException e) {
-					showAlert(e);
-				} catch (MalformedTreeException e) {
-					showAlert(e);
-				}
+				addAlternativeHandle();
 			}
 		});
-		GridPane.setConstraints(addAlternativeButton, 1, 3);
+		GridPane.setConstraints(addAlternativeButton, 0, 4);
+		return addAlternativeButton;
+	}
+
+	private Button createRemoveAlternativeButton() {
+		Button addAlternativeButton = new Button("remove selected");
+		addAlternativeButton.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				Alternative selected = list.getSelectionModel().getSelectedItem();
+				System.out.println("selected: " + selected);
+				if (selected != null) {
+					list.getItems().remove(selected);
+					tree.deleteAlternative(selected);
+					list.refresh();
+				}
+
+			}
+		});
+		GridPane.setConstraints(addAlternativeButton, 1, 4);
 		return addAlternativeButton;
 	}
 
@@ -297,17 +286,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 			@Override
 			public void handle(ActionEvent event) {
-
-				try {
-					createNewAlternative();
-					tfalternativeName.setText("");
-				} catch (AlreadyExistsException e) {
-					showAlert(e);
-				} catch (UnspecyfiedParameterException e) {
-					e.printStackTrace();
-				} catch (MalformedTreeException e) {
-					showAlert(e);
-				}
+				addAlternativeHandle();
 			}
 		});
 
@@ -330,5 +309,18 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		tree.addNewAlternative(a);
 		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
 		return a;
+	}
+
+	private void addAlternativeHandle() {
+		try {
+			createNewAlternative();
+			tfalternativeName.setText("");
+		} catch (AlreadyExistsException e) {
+			showAlert(e);
+		} catch (UnspecyfiedParameterException e) {
+			e.printStackTrace();
+		} catch (MalformedTreeException e) {
+			showAlert(e);
+		}
 	}
 }

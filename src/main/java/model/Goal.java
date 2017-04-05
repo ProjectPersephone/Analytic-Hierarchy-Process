@@ -1,6 +1,6 @@
 package model;
 
-public class Goal implements Comparable {
+public class Goal implements Comparable<Goal> {
 
 	protected int id;
 	protected String name;
@@ -60,19 +60,18 @@ public class Goal implements Comparable {
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		Goal g = (Goal)o;
+	public String toString() {
+		return "Goal [id=" + id + ", name=" + name + "]";
+	}
+
+	@Override
+	public int compareTo(Goal g) {
 		int res = String.CASE_INSENSITIVE_ORDER.compare(g.getName(), name);
 		if (res == 0) {
 			res = g.getName().compareTo(name);
 		}
 		System.out.println("res: " + res);
 		return res;
-	}
-
-	@Override
-	public String toString() {
-		return "Goal [id=" + id + ", name=" + name + "]";
 	}
 
 }

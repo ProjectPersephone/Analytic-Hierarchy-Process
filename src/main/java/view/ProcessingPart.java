@@ -19,7 +19,9 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -60,11 +62,13 @@ public class ProcessingPart extends ViewPart {
 
 		Label lComputingMethod = createComputingMethodsLabel();
 		grid.getChildren().add(lComputingMethod);
+		
 		ComboBox<PriorityVectorComputeMethod> cbMethods = createComputingMethodsComboBox();
 		grid.getChildren().add(cbMethods);
 
 		Label lSourceFolder = setSourceFolderLabel();
 		grid.getChildren().add(lSourceFolder);
+		
 		TextField tfFileName = createFileNameTextField();
 		grid.getChildren().add(tfFileName);
 
@@ -80,7 +84,7 @@ public class ProcessingPart extends ViewPart {
 	}
 
 	private Label createComputingMethodsLabel() {
-		Label lComputingMethod = new Label("computing method");
+		Label lComputingMethod = new Label("priority method ");
 		GridPane.setConstraints(lComputingMethod, 0, 0);
 		return lComputingMethod;
 	}
@@ -107,7 +111,8 @@ public class ProcessingPart extends ViewPart {
 	private Button setComputeButton() {
 		Button bCompute = new Button();
 		bCompute.setText("compute");
-		GridPane.setConstraints(bCompute, 1, 2);
+		bCompute.setMinWidth(DEFAULT_BUTTON_WIDTH);
+		GridPane.setConstraints(bCompute, 0, 3, 2, 1, HPos.CENTER, VPos.CENTER);
 		bCompute.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override

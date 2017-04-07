@@ -36,14 +36,12 @@ public class DataEnteringPart extends ViewPart {
 	private HBox consistencyPane;
 	private VBox labelPane;
 	private Goal lastShowed;
-	private ConsistencyComputeMethod ccm;
 
 	private static final double defInputWidth = 77.0;
 
 	public DataEnteringPart(CriteriumTree2 tree) {
 		super(tree);
 		pane = createPane();
-		ccm = ConsistencyComputeMethod.maximumEigenvalueMethod();
 	}
 
 	@Override

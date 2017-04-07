@@ -3,9 +3,11 @@ package view;
 import java.util.ArrayList;
 import java.util.List;
 
+import consistencyComputingMethods.ConsistencyComputeMethod;
 import exceptions.FirstStageMustBeGoalException;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.GridPane;
@@ -17,10 +19,13 @@ import model.Goal;
 public abstract class ViewPart {
 	protected Pane pane;
 	protected final double DEFAULT_HEIGHT = 350.0;
+	protected final double DEFAULT_BUTTON_WIDTH = 150.0;
 	protected CriteriumTree2 tree;
+	protected ConsistencyComputeMethod ccm;
 
 	public ViewPart(CriteriumTree2 tree){
 		this.tree = tree;
+		ccm=ConsistencyComputeMethod.maximumEigenvalueMethod();
 	}
 
 	public Pane getPart() {
@@ -30,6 +35,7 @@ public abstract class ViewPart {
 	protected GridPane createGridPane() {
 		GridPane gridPane = new GridPane();
 		gridPane.setPadding(new Insets(10, 10, 10, 10));
+//		gridPane.setAlignment(Pos.TOP_CENTER);
 		gridPane.setVgap(5);
 		gridPane.setHgap(5);
 		// optionsPane.setAlignment(Pos.CENTER);

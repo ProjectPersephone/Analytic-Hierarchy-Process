@@ -64,20 +64,21 @@ public class CriteriumTree2 {
 	public void deleteAlternative(Alternative new_val) {
 		alternatives.remove(new_val);
 		deleteAlternativeFromListAndCriteriumValue(alternativeAsCriteriumList, new_val);
+//		System.out.println("acl: " + alternativeAsCriteriumList);
 		for (Entry<Goal, List<Criterium>> e : alternativesTree.entrySet()) {
 			deleteAlternativeFromListAndCriteriumValue(e.getValue(), new_val);
+//			System.out.println(e.getKey() + " v: " + e.getValue());
 		}
 
 	}
 
-	private void deleteAlternativeFromListAndCriteriumValue(List<Criterium> cl, Alternative new_val) {
+	private void deleteAlternativeFromListAndCriteriumValue(List<Criterium> cl, Alternative altToDelete) {
 		Criterium toRemove = null;
 		for (Criterium c : cl) {
-			if (c.getName().equals(new_val.getName())) {
+			if (c.getName().equals(altToDelete.getName())) {
 				toRemove = c;
-			} else {
-				c.removeValueOf(new_val.getName());
 			}
+			c.removeValueOf(altToDelete.getName());
 		}
 		cl.remove(toRemove);
 	}

@@ -66,10 +66,6 @@ public class Criterium extends Alternative {
 	}
 
 	public void removeValueOf(String name) {
-		for(Entry<String, Double> e : values.entrySet()){
-			if(e.getKey().equals(name)){
-				values.remove(e);
-			}
-		}
+		values.remove(name);
 	}
 }

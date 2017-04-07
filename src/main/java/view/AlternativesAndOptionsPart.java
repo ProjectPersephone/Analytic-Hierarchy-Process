@@ -6,6 +6,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import AHPSolver.XMLCreatorLogic2;
+import consistencyComputingMethods.ConsistencyComputeMethod;
 import exceptions.AlreadyExistsException;
 import exceptions.FileAlreadyExistsException;
 import exceptions.MalformedTreeException;
@@ -17,20 +18,28 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 import model.Alternative;
 import model.CriteriumTree2;
+import priorityVecorComputingMethods.PriorityVectorComputeMethod;
 
 public class AlternativesAndOptionsPart extends ViewPart {
 	private String sourceFolder;
@@ -64,30 +73,80 @@ public class AlternativesAndOptionsPart extends ViewPart {
 	private Pane getOptionsPane() {
 		GridPane optionsPane = createGridPane();
 
+		// 0
 		Label lOptions = createOptionsLabel();
 		optionsPane.getChildren().add(lOptions);
 
-		// TODO path label
+		//1
+		Label maxConsistencyLabel = createMaxConsistencyLabel();
+		optionsPane.getChildren().add(maxConsistencyLabel);
+
+		TextField tfConsistencyValue = createMaxConsistencyValueTextField();
+		optionsPane.getChildren().add(tfConsistencyValue);
+
+		//2
+		Label consistencyMethodLabel = createConsistencyMethodsLabel();
+		optionsPane.getChildren().add(consistencyMethodLabel);
+
+		ComboBox<ConsistencyComputeMethod> cMethods = createConsistencyMethodsComboBox();
+		optionsPane.getChildren().add(cMethods);
+
+		Label sourceFolderLabel = createSourceFolderLabel();
+		optionsPane.getChildren().add(sourceFolderLabel);
+
 		TextField tfpath = createFileTextField();
 		optionsPane.getChildren().add(tfpath);
 
 		Button addAlternativeButton = setCreateXMLButton();
 		optionsPane.getChildren().add(addAlternativeButton);
 
-		TextField tfConsistencyValue = createMaxConsistencyValueTextField();
-		optionsPane.getChildren().add(tfConsistencyValue);
-
-		// TODO consistency method
 		// TODO (optional) adding values method
 
 		return optionsPane;
 
 	}
 
+	private ComboBox<ConsistencyComputeMethod> createConsistencyMethodsComboBox() {
+
+		ObservableList<ConsistencyComputeMethod> options = FXCollections.observableArrayList(
+				ConsistencyComputeMethod.maximumEigenvalueMethod());
+		ComboBox<ConsistencyComputeMethod> cbMethods = new ComboBox<ConsistencyComputeMethod>(options);
+
+		cbMethods.setValue(ccm);
+		cbMethods.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				ccm = cbMethods.getValue();
+			}
+		});
+		GridPane.setConstraints(cbMethods, 1, 2);
+		return cbMethods;
+	}
+
+	private Label createConsistencyMethodsLabel() {
+		Label lComputingMethod = new Label("consistency method ");
+		GridPane.setConstraints(lComputingMethod, 0, 2);
+		return lComputingMethod;
+	}
+
+	private Label createMaxConsistencyLabel() {
+		Label lSourceFolder = new Label("max consistency ");
+		GridPane.setConstraints(lSourceFolder, 0, 1);
+		return lSourceFolder;
+	}
+
+	private Label createSourceFolderLabel() {
+		Label lSourceFolder = new Label(sourceFolder);
+		GridPane.setConstraints(lSourceFolder, 0, 3);
+		return lSourceFolder;
+	}
+
 	private Button setCreateXMLButton() {
 		Button bCompute = new Button();
-		bCompute.setText("create");
-		GridPane.setConstraints(bCompute, 2, 1);
+		bCompute.setText("create XML");
+		bCompute.setMinWidth(DEFAULT_BUTTON_WIDTH);
+		GridPane.setConstraints(bCompute, 0, 4, 2, 1, HPos.CENTER, VPos.CENTER);
 		bCompute.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -144,7 +203,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 		});
 
-		GridPane.setConstraints(tf, 1, 2);
+		GridPane.setConstraints(tf, 1, 1);
 		return tf;
 	}
 
@@ -157,19 +216,18 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 				fileName = tf.getText();
-
 			}
-
 		});
 
-		GridPane.setConstraints(tf, 1, 1);
+		GridPane.setConstraints(tf, 1, 3);
 		return tf;
 	}
 
 	private Label createOptionsLabel() {
-		Label lAlts = new Label("options");
-		GridPane.setConstraints(lAlts, 0, 0);
-		return lAlts;
+		Label label = new Label("options");
+		GridPane.setConstraints(label, 0, 0, 2, 1, HPos.CENTER, VPos.CENTER);
+		label.setFont(Font.font("Verdena", FontWeight.BOLD, 18));
+		return label;
 	}
 
 	private Pane getAlternativesPane() {
@@ -179,9 +237,8 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		Label lAlts = createAlternativesLabel();
 		alternativesPane.getChildren().add(lAlts);
 
-		Text clickToDelete = new Text("click on alternative to delete");
-		GridPane.setConstraints(clickToDelete, 0, 1);
-		alternativesPane.getChildren().add(clickToDelete);
+		// Text clickToDelete = createClickToDeleteText();
+		// alternativesPane.getChildren().add(clickToDelete);
 
 		ListView<Alternative> list = createAlternativesList();
 		alternativesPane.getChildren().addAll(list);
@@ -198,6 +255,12 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		return alternativesPane;
 	}
 
+	private Text createClickToDeleteText() {
+		Text clickToDelete = new Text("click on alternative to delete");
+		GridPane.setConstraints(clickToDelete, 0, 1, 2, 1);
+		return clickToDelete;
+	}
+
 	private ListView<Alternative> createAlternativesList() {
 		list = new ListView<Alternative>();
 		list.setItems((ObservableList<Alternative>) tree.getAlternatives());
@@ -212,11 +275,15 @@ public class AlternativesAndOptionsPart extends ViewPart {
 						if (item != null) {
 							setText(item.getName());
 						}
+						if (empty) {
+							setText(null);
+						}
 					}
 				};
 			}
 		});
-		GridPane.setConstraints(list, 0, 2);
+		GridPane.setConstraints(list, 0, 2, 2, 1);
+		// GridPane.setConstraints(list, 0, 2);
 		VBox.setVgrow(list, Priority.ALWAYS);
 
 		// list.getSelectionModel().selectedItemProperty().addListener(new
@@ -239,12 +306,14 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 	private Label createAlternativesLabel() {
 		Label lAlts = new Label("alternatives");
-		GridPane.setConstraints(lAlts, 0, 0);
+		GridPane.setConstraints(lAlts, 0, 0, 2, 1, HPos.CENTER, VPos.CENTER);
+		lAlts.setFont(Font.font("Verdena", FontWeight.BOLD, 18));
 		return lAlts;
 	}
 
 	private Button createAddAlternativeButton() {
 		Button addAlternativeButton = new Button("add");
+		addAlternativeButton.setMinWidth(DEFAULT_BUTTON_WIDTH);
 		addAlternativeButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -258,16 +327,24 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 	private Button createRemoveAlternativeButton() {
 		Button addAlternativeButton = new Button("remove selected");
+
+		addAlternativeButton.setMinWidth(DEFAULT_BUTTON_WIDTH);
 		addAlternativeButton.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
 				Alternative selected = list.getSelectionModel().getSelectedItem();
+				int cs = list.getSelectionModel().getSelectedIndex();
 				System.out.println("selected: " + selected);
 				if (selected != null) {
-					list.getItems().remove(selected);
 					tree.deleteAlternative(selected);
-					list.refresh();
+					list.getItems().remove(selected);
+					final int newSelectedIdx = (cs == list.getItems().size() - 1) ? cs - 1 : cs;
+
+					list.getSelectionModel().select(newSelectedIdx);
+					// System.out.println(list.getItems());
+					// list.refresh();
+					pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
 				}
 
 			}
@@ -290,7 +367,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			}
 		});
 
-		GridPane.setConstraints(tfalternativeName, 0, 3);
+		GridPane.setConstraints(tfalternativeName, 0, 3, 2, 1);
 		return tfalternativeName;
 	}
 

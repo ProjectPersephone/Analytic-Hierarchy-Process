@@ -1,19 +1,15 @@
 package model;
 
+import dataEnteringType.DataEnteringType;
+
 public class Goal implements Comparable<Goal> {
 
 	protected int id;
 	protected String name;
 	protected double consistencyValue;
+	protected DataEnteringType dataEnteringType;
 
-	public double getConsistencyValue() {
-		return consistencyValue;
-	}
-
-	public void setConsistencyValue(double consistencyValue) {
-		this.consistencyValue = consistencyValue;
-	}
-
+	
 	public Goal(String name) {
 		this(name, 0, 0);
 	}
@@ -21,6 +17,15 @@ public class Goal implements Comparable<Goal> {
 	public Goal(String name, int id, double consistencyValue) {
 		this.name = name;
 		this.id = id;
+		this.consistencyValue = consistencyValue;
+		dataEnteringType = DataEnteringType.getHalfConsistencyType();
+	}
+
+	public double getConsistencyValue() {
+		return consistencyValue;
+	}
+
+	public void setConsistencyValue(double consistencyValue) {
 		this.consistencyValue = consistencyValue;
 	}
 

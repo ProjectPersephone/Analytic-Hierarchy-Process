@@ -14,7 +14,7 @@ public class Criterium extends Alternative {
 
 	public Criterium(int parentId, String name) throws MalformedTreeException {
 		super(name);
-		values = new HashMap<String, Double>();
+		values = new TreeMap<String, Double>();
 
 		values.put(name, 1.);
 		this.parentId = parentId;
@@ -22,7 +22,7 @@ public class Criterium extends Alternative {
 
 	public Criterium(Criterium c) throws MalformedTreeException {
 		this(c.getParentId(), c.getName());
-		this.values = new HashMap<String, Double>(c.getValues());
+		this.values = new TreeMap<String, Double>(c.getValues());
 	}
 
 	public int getParentId() {

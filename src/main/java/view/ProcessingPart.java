@@ -50,9 +50,8 @@ public class ProcessingPart extends ViewPart {
 		this.fileName = "testXML.xml";
 		this.computingMethod = PriorityVectorComputeMethod.eigenvectorMethod();
 		pane = createPane();
-		
-	}
 
+	}
 
 	@Override
 	protected Pane createPane() {
@@ -60,18 +59,25 @@ public class ProcessingPart extends ViewPart {
 		Pane vBox = new VBox();
 		Pane grid = createGridPane();
 
+		// 0
+		Label computeXMLLabel = createComputeXMLLabel();
+		grid.getChildren().add(computeXMLLabel);
+
+		// 1
 		Label lComputingMethod = createComputingMethodsLabel();
 		grid.getChildren().add(lComputingMethod);
-		
+
 		ComboBox<PriorityVectorComputeMethod> cbMethods = createComputingMethodsComboBox();
 		grid.getChildren().add(cbMethods);
 
+		// 2
 		Label lSourceFolder = setSourceFolderLabel();
 		grid.getChildren().add(lSourceFolder);
-		
+
 		TextField tfFileName = createFileNameTextField();
 		grid.getChildren().add(tfFileName);
 
+		// 3
 		Button bCompute = setComputeButton();
 		grid.getChildren().add(bCompute);
 
@@ -83,9 +89,16 @@ public class ProcessingPart extends ViewPart {
 
 	}
 
+	private Label createComputeXMLLabel() {
+		Label label = new Label("compute XML");
+		GridPane.setConstraints(label, 0, 0, 2, 1, HPos.CENTER, VPos.CENTER);
+		label.setFont(Font.font("Verdena", FontWeight.BOLD, 18));
+		return label;
+	}
+
 	private Label createComputingMethodsLabel() {
 		Label lComputingMethod = new Label("priority method ");
-		GridPane.setConstraints(lComputingMethod, 0, 0);
+		GridPane.setConstraints(lComputingMethod, 0, 1);
 		return lComputingMethod;
 	}
 
@@ -104,7 +117,7 @@ public class ProcessingPart extends ViewPart {
 				computingMethod = cbMethods.getValue();
 			}
 		});
-		GridPane.setConstraints(cbMethods, 1, 0);
+		GridPane.setConstraints(cbMethods, 1, 1);
 		return cbMethods;
 	}
 
@@ -152,13 +165,13 @@ public class ProcessingPart extends ViewPart {
 			}
 		});
 
-		GridPane.setConstraints(tfFileName, 1, 1);
+		GridPane.setConstraints(tfFileName, 1, 2);
 		return tfFileName;
 	}
 
 	private Label setSourceFolderLabel() {
 		Label lSourceFolder = new Label(sourceFolder);
-		GridPane.setConstraints(lSourceFolder, 0, 1);
+		GridPane.setConstraints(lSourceFolder, 0, 2);
 		return lSourceFolder;
 	}
 

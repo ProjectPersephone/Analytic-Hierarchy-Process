@@ -26,6 +26,7 @@ public class TreeBranch extends StackPane {
 	private Goal criterium;
 	private Label lName;
 	private boolean isComparating;
+	private ConsistencyLook consistent;
 
 	private final static Border defBorderOn = new Border(
 			new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2.)));
@@ -36,10 +37,11 @@ public class TreeBranch extends StackPane {
 		this.criteriumTreeAndDataEnteringPart = criteriumTreeAndDataEnteringPart;
 		this.criterium = goal;
 		this.isComparating = false;
+		this.consistent = ConsistencyLook.UNDEFINIED;
+		setConsistencyLook(consistent);
 		changeName(goal);
 		createBorder();
 		setBranchMenu();
-		setConsistencyLook(true);
 
 	}
 
@@ -154,7 +156,6 @@ public class TreeBranch extends StackPane {
 		} else {
 			this.setBorder(defBorderOff);
 		}
-
 	}
 
 	private void changeName(Goal goal) {
@@ -163,12 +164,18 @@ public class TreeBranch extends StackPane {
 		this.getChildren().add(lName);
 	}
 
-	public void setConsistencyLook(boolean consistent) {
-		if (consistent) {
+	public ConsistencyLook getConsistent() {
+		return consistent;
+	}
+
+	public void setConsistencyLook(ConsistencyLook consistent) {
+		this.consistent = consistent;
+		if (consistent.equals(ConsistencyLook.CONSISTENT)) {
 			this.setBackground(new Background(new BackgroundFill(Color.LIGHTGREEN, CornerRadii.EMPTY, Insets.EMPTY)));
+		} else if (consistent.equals(ConsistencyLook.NOT_CONSISTENT)) {
+			this.setBackground(new Background(new BackgroundFill(Color.INDIANRED, CornerRadii.EMPTY, Insets.EMPTY)));
 		} else {
-			this.setBackground(
-					new Background(new BackgroundFill(Color.PALEVIOLETRED, CornerRadii.EMPTY, Insets.EMPTY)));
+			this.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
 		}
 	}
 }

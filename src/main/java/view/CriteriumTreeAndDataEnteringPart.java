@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
+import events.ChangeComputingUnit;
+import events.ChangeConsistencyEvent;
 import exceptions.MalformedTreeException;
 import exceptions.notFoundException;
 import javafx.geometry.HPos;
@@ -203,7 +205,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 
 	public void createComparisons(TreeBranch treeBranch) {
 		lastModifiedBranch = treeBranch;
-		dataEnteringPartBuilder.createInputTable(treeBranch.getCriterium());
+		dataEnteringPartBuilder.createDataEnteringComponents(treeBranch.getCriterium());
 		setTreeBranchConsistency(treeBranch);
 		setDataEnteringPartConsistency(treeBranch);
 	}

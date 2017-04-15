@@ -4,19 +4,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import events.EnteredValue;
 import exceptions.MalformedTreeException;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.Event;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import model.Criterium;
 import model.CriteriumTree2;
 import model.Goal;
+import events.EnteredValue;
 
-public class HalfConsistecyDataEnteringType extends DataEnteringType {
-
+public class FullTypingDataEnteringType extends DataEnteringType {
 	GridPane gridPane;
 
 	@Override
@@ -33,7 +33,7 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 			for (Entry<String, Double> entry : values.entrySet()) {
 				String key = entry.getKey();
 				createLabel(i, j * 2, key);
-				createCmpValuesImputs(i, j, c, key, entry.getValue(), tree);
+				createCmpValuesImputs(i, j * 2 + 1, c, key, entry.getValue(), tree);
 				i++;
 			}
 		}
@@ -49,11 +49,7 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 	}
 
 	private void createCmpValuesImputs(int i, int j, Criterium c, String name, Double v, CriteriumTree2 tree) {
-		int k = j*2+1;
 		TextField nInput = new TextField();
-		if(i-1<=j00){
-			nInput.setDisable(true);
-		}
 		nInput.setMaxWidth(defInputWidth);
 		nInput.setMinWidth(defInputWidth);
 		nInput.setText(v.toString());
@@ -69,12 +65,12 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 				}
 			}
 		});
-		GridPane.setConstraints(nInput, i, k);
+		GridPane.setConstraints(nInput, i, j);
 		gridPane.getChildren().add(nInput);
 	}
 
 	@Override
 	public String toString() {
-		return "half consistecy";
+		return "full typing";
 	}
 }

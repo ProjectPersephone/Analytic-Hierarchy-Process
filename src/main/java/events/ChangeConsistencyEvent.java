@@ -1,10 +1,10 @@
-package view;
+package events;
 
 import javafx.event.Event;
 import javafx.event.EventType;
 import model.Goal;
 
-class ChangeConsistencyEvent extends Event {
+public class ChangeConsistencyEvent extends Event {
 	Goal criterium;
 
 	public static final EventType<ChangeConsistencyEvent> CHANGED_SINGLE_CONSISTENCY = new EventType<ChangeConsistencyEvent>(

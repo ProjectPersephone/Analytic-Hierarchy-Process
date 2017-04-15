@@ -9,7 +9,6 @@ public class Goal implements Comparable<Goal> {
 	protected double consistencyValue;
 	protected DataEnteringType dataEnteringType;
 
-	
 	public Goal(String name) {
 		this(name, 0, 0);
 	}
@@ -18,7 +17,7 @@ public class Goal implements Comparable<Goal> {
 		this.name = name;
 		this.id = id;
 		this.consistencyValue = consistencyValue;
-		dataEnteringType = DataEnteringType.getHalfConsistencyType();
+		dataEnteringType = DataEnteringType.getFullTypingConsistencyType();
 	}
 
 	public double getConsistencyValue() {
@@ -43,6 +42,14 @@ public class Goal implements Comparable<Goal> {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public DataEnteringType getDataEnteringType() {
+		return dataEnteringType;
+	}
+
+	public void setDataEnteringType(DataEnteringType dataEnteringType) {
+		this.dataEnteringType = dataEnteringType;
 	}
 
 	@Override

@@ -8,15 +8,21 @@ import java.util.Map.Entry;
 import AHPSolver.ConsistencyCalculator;
 import Jama.Matrix;
 import consistencyComputingMethods.ConsistencyComputeMethod;
+import dataEnteringType.DataEnteringType;
+import events.ChangeConsistencyEvent;
+import events.EnteredValue;
 import exceptions.MalformedTreeException;
 import exceptions.notFoundException;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.geometry.Pos;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -30,14 +36,14 @@ import javafx.scene.text.Text;
 import model.Criterium;
 import model.CriteriumTree2;
 import model.Goal;
+import net.bytebuddy.asm.Advice.Enter;
 
 public class DataEnteringPart extends ViewPart {
 	private GridPane gridPane;
-	private HBox consistencyPane;
 	private VBox labelPane;
+	private HBox consistencyPane;
+	private HBox dataEnteringTypePane;
 	private Goal lastShowed;
-
-	private static final double defInputWidth = 77.0;
 
 	public DataEnteringPart(CriteriumTree2 tree) {
 		super(tree);
@@ -58,47 +64,37 @@ public class DataEnteringPart extends ViewPart {
 		return sp;
 	}
 
-	public void createInputTable(Goal criterium) {
-		showMainLabel(criterium);
+	public void createDataEnteringComponents(Goal criterium) {
 		lastShowed = criterium;
-		gridPane.getChildren().clear();
-		try {
-			List<Criterium> cList = tree.getChildren(criterium);
-			createInputs(cList);
+		showMainLabel(criterium);
+		showEnteringTypeCB(criterium);
 
+		try {
+			createInputs(criterium);
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		}
 	}
 
-	private void createInputs(List<Criterium> children) {
-		int i;
-		for (int j = 0; j < children.size(); j++) {
-			Criterium c = children.get(j);
-			Map<String, Double> values = c.getValues();
-			createLabel(0, j * 2 + 1, c.getName());
+	private void showEnteringTypeCB(Goal criterium) {
+		dataEnteringTypePane.getChildren().clear();
+		Label dataEnteringTypeLabel = createDataEnteringTypeLabel();
+		dataEnteringTypePane.getChildren().add(dataEnteringTypeLabel);
 
-			i = 1;
-			for (Entry<String, Double> entry : values.entrySet()) {
-				String key = entry.getKey();
-				createLabel(i, j * 2, key);
-				createCmpValuesImputs(i, j * 2 + 1, c, key, entry.getValue());
-				i++;
-			}
-		}
+		ComboBox<DataEnteringType> depMethods = createDataEnteringTypeComboBox(criterium);
+		dataEnteringTypePane.getChildren().add(depMethods);
 	}
 
-	private void createLabel(int i, int j, String key) {
-		Label lH = new Label(key);
-		lH.setMaxWidth(defInputWidth);
-		lH.setMinWidth(defInputWidth);
-		GridPane.setConstraints(lH, i, j);
-		gridPane.getChildren().add(lH);
+	private void createInputs(Goal criterium) throws MalformedTreeException {
+		gridPane.getChildren().clear();
+		criterium.getDataEnteringType().create(criterium, tree, gridPane);
+		gridPane.addEventHandler(EnteredValue.COMPARATION_VALUE_CHANGED, event -> {
+			handleComparationValueChanged();
+		});
 	}
 
-	public void changeEnteredValue(Criterium c, String name, Double value) {
+	public void handleComparationValueChanged() {
 		try {
-			tree.changeValue(c, name, value);
 			calculateConsistency(lastShowed);
 		} catch (MalformedTreeException e) {
 			showAlert(e);
@@ -129,26 +125,6 @@ public class DataEnteringPart extends ViewPart {
 		return m;
 	}
 
-	private void createCmpValuesImputs(int i, int j, Criterium c, String name, Double v) {
-		TextField nInput = new TextField();
-		nInput.setMaxWidth(defInputWidth);
-		nInput.setMinWidth(defInputWidth);
-		nInput.setText(v.toString());
-		nInput.textProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				String regex = "(\\d{0,1}.\\d{0,5})|(\\d{0,2}.\\d{0,4})|(\\d{0,3}.\\d{0,3})|(\\d{0,4}.\\d{0,2})|(\\d{0,5}.\\d{0,1})";
-				if (newValue.matches(regex)) {
-					changeEnteredValue(c, name, Double.parseDouble(newValue));
-				} else {
-					nInput.setText(oldValue);
-				}
-			}
-		});
-		GridPane.setConstraints(nInput, i, j);
-		gridPane.getChildren().add(nInput);
-	}
-
 	public void showConsistency(double consistencyValue) {
 
 		try {
@@ -172,8 +148,8 @@ public class DataEnteringPart extends ViewPart {
 			showAlert(e);
 		}
 	}
-	
-	public void showMainLabel(Goal criterium){
+
+	public void showMainLabel(Goal criterium) {
 		labelPane.getChildren().clear();
 		Label cNameLabel = new Label(criterium.getName());
 		cNameLabel.setFont(Font.font("Verdena", FontWeight.EXTRA_BOLD, 20));
@@ -183,7 +159,7 @@ public class DataEnteringPart extends ViewPart {
 	public void refresh() {
 		if (lastShowed != null) {
 			try {
-				createInputTable(lastShowed);
+				createDataEnteringComponents(lastShowed);
 				calculateConsistency(lastShowed);
 			} catch (MalformedTreeException e) {
 				showAlert(e);
@@ -195,10 +171,11 @@ public class DataEnteringPart extends ViewPart {
 		Pane vBox = new VBox();
 
 		arrangeLabelPane();
+		arrangeEnteringTypePane();
 		arrangeGridPane();
 		arrangeConsistencyPane();
 
-		vBox.getChildren().addAll(labelPane, gridPane, consistencyPane);
+		vBox.getChildren().addAll(labelPane, dataEnteringTypePane, gridPane, consistencyPane);
 		return vBox;
 	}
 
@@ -206,6 +183,12 @@ public class DataEnteringPart extends ViewPart {
 		labelPane = new VBox();
 		labelPane.setAlignment(Pos.BOTTOM_CENTER);
 		labelPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
+	}
+
+	private void arrangeEnteringTypePane() {
+		dataEnteringTypePane = new HBox();
+		dataEnteringTypePane.setAlignment(Pos.BOTTOM_CENTER);
+		dataEnteringTypePane.setMinWidth(DEFAULT_HEIGHT - 10.0);
 	}
 
 	private void arrangeGridPane() {
@@ -218,6 +201,36 @@ public class DataEnteringPart extends ViewPart {
 		consistencyPane = new HBox();
 		consistencyPane.setAlignment(Pos.CENTER);
 		consistencyPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
+	}
+
+	private Label createDataEnteringTypeLabel() {
+		Label l = new Label("entering method ");
+		GridPane.setConstraints(l, 0, 3);
+		return l;
+	}
+
+	private ComboBox<DataEnteringType> createDataEnteringTypeComboBox(Goal c) {
+
+		ObservableList<DataEnteringType> options = FXCollections
+				.observableArrayList(DataEnteringType.getFullTypingConsistencyType(), DataEnteringType.getHalfConsistencyType());
+		ComboBox<DataEnteringType> methods = new ComboBox<DataEnteringType>(options);
+		methods.setValue(c.getDataEnteringType());
+		methods.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				
+				try {
+					c.setDataEnteringType(methods.getValue());
+					createInputs(c);
+				} catch (MalformedTreeException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		GridPane.setConstraints(methods, 1, 3);
+		return methods;
 	}
 
 }

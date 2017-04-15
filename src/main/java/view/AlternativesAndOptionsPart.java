@@ -8,6 +8,7 @@ import javax.xml.transform.TransformerException;
 import AHPSolver.XMLCreatorLogic2;
 import consistencyComputingMethods.ConsistencyComputeMethod;
 import dataEnteringType.DataEnteringType;
+import events.ChangeConsistencyEvent;
 import exceptions.AlreadyExistsException;
 import exceptions.FileAlreadyExistsException;
 import exceptions.MalformedTreeException;
@@ -92,12 +93,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		ComboBox<ConsistencyComputeMethod> cMethods = createConsistencyMethodsComboBox();
 		optionsPane.getChildren().add(cMethods);
 
-		// 3
-		Label dataEnteringTypeLabel = createDataEnteringTypeLabel();
-		optionsPane.getChildren().add(dataEnteringTypeLabel);
-
-		ComboBox<DataEnteringType> depMethods = createDataEnteringTypeComboBox();
-		optionsPane.getChildren().add(depMethods);
+		//TODO change to 3 
 
 		// 4
 		Label sourceFolderLabel = createSourceFolderLabel();
@@ -114,23 +110,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 	}
 
-	private ComboBox<DataEnteringType> createDataEnteringTypeComboBox() {
-
-		ObservableList<DataEnteringType> options = FXCollections
-				.observableArrayList(DataEnteringType.getHalfConsistencyType());
-		ComboBox<DataEnteringType> methods = new ComboBox<DataEnteringType>(options);
-		// TODO
-		 methods.setValue(DataEnteringType.getHalfConsistencyType());
-//		methods.setOnAction(new EventHandler<ActionEvent>() {
-//
-//			@Override
-//			public void handle(ActionEvent event) {
-//				ccm = cbMethods.getValue();
-//			}
-//		});
-		GridPane.setConstraints(methods, 1, 3);
-		return methods;
-	}
+	
 
 	private ComboBox<ConsistencyComputeMethod> createConsistencyMethodsComboBox() {
 
@@ -150,11 +130,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		return cbMethods;
 	}
 
-	private Label createDataEnteringTypeLabel() {
-		Label l = new Label("data entering method ");
-		GridPane.setConstraints(l, 0, 3);
-		return l;
-	}
+
 
 	private Label createConsistencyMethodsLabel() {
 		Label lComputingMethod = new Label("consistency method ");

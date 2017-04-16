@@ -64,10 +64,10 @@ public class CriteriumTree2 {
 	public void deleteAlternative(Alternative new_val) {
 		alternatives.remove(new_val);
 		deleteAlternativeFromListAndCriteriumValue(alternativeAsCriteriumList, new_val);
-//		System.out.println("acl: " + alternativeAsCriteriumList);
+		// System.out.println("acl: " + alternativeAsCriteriumList);
 		for (Entry<Goal, List<Criterium>> e : alternativesTree.entrySet()) {
 			deleteAlternativeFromListAndCriteriumValue(e.getValue(), new_val);
-//			System.out.println(e.getKey() + " v: " + e.getValue());
+			// System.out.println(e.getKey() + " v: " + e.getValue());
 		}
 
 	}
@@ -100,7 +100,16 @@ public class CriteriumTree2 {
 			}
 		}
 		return new ArrayList<Criterium>(); // criterium have no children
+	}
 
+	public List<Goal> getLastChildren() {
+		List<Goal> children = new ArrayList<>();
+		for (Entry<Goal, List<Criterium>> e : criteriaTree.entrySet()) {
+			if (e.getValue().isEmpty()) {
+				children.add(e.getKey());
+			}
+		}
+		return children;
 	}
 
 	private List<Criterium> createAlternativesAsCriterium(Goal g) throws MalformedTreeException {

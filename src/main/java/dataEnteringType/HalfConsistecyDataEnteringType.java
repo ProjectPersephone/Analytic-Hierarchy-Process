@@ -1,11 +1,15 @@
 package dataEnteringType;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import events.EnteredValue;
 import exceptions.MalformedTreeException;
+import exceptions.notFoundException;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
@@ -20,24 +24,86 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 	GridPane gridPane;
 
 	@Override
-	public void create(Goal criterium, CriteriumTree2 tree, GridPane gridPane) throws MalformedTreeException {
+	public void create(Goal criterium, CriteriumTree2 tree, GridPane gridPane)
+			throws MalformedTreeException, NumberFormatException, notFoundException {
 		this.gridPane = gridPane;
 		List<Criterium> children = tree.getChildren(criterium);
+
+		List<InputListenerValues> list = new ArrayList<>();
+
+		int rows = children.size();
+		// System.out.println("rows: " + rows);
 		int i;
-		for (int j = 0; j < children.size(); j++) {
+		for (int j = 0; j < rows; j++) {
 			Criterium c = children.get(j);
 			Map<String, Double> values = c.getValues();
 			createLabel(0, j * 2 + 1, c.getName());
 
 			i = 1;
 			for (Entry<String, Double> entry : values.entrySet()) {
-				String key = entry.getKey();
-				createLabel(i, j * 2, key);
-				createCmpValuesImputs(i, j, c, key, entry.getValue(), tree);
+
+				String name = entry.getKey();
+				createLabel(i, j * 2, name);
+				TextField tf = createCmpValuesImputs(i, j, entry.getValue());
+				if (i - 1 != j) {
+					list.add(new InputListenerValues(tf, c, name, i - 1, j));
+				} else {
+					changeValue(tree, 1, c, name, tf);
+				}
 				i++;
 			}
 		}
 
+		for (InputListenerValues ilv : list) {
+			if (ilv.checkMembershipToUpperTriangular()) {
+				for (InputListenerValues inverseIlv : list) {
+					if ((inverseIlv.getI() == ilv.getJ()) && (inverseIlv.getJ() == ilv.getI())) {
+						addListenerToInput(ilv, inverseIlv, tree);
+					}
+				}
+			}
+		}
+
+	}
+
+	private void addListenerToInput(InputListenerValues ilv, InputListenerValues inverseIlv, CriteriumTree2 tree)
+			throws NumberFormatException, notFoundException {
+		TextField input = ilv.getTextField();
+		TextField inverseInput = inverseIlv.getTextField();
+		changeValue(tree, 1 / Double.parseDouble(input.getText()), inverseIlv.getCriterium(), inverseIlv.getName(),
+				inverseInput);
+		input.textProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+				String regex = "(\\d{0,1}\\.{0,1}\\d{0,5})|(\\d{0,2}\\.{0,1}\\d{0,4})|(\\d{0,3}\\.{0,1}\\d{0,3})|(\\d{0,4}\\.{0,1}\\d{0,2})|(\\d{0,5}\\.{0,1}\\d{0,1})";
+				if (newValue.matches(regex)) {
+
+					double value = Double.parseDouble(newValue);
+					double inverseValue = 1. / value;
+
+					// System.out.println("tf: " + input.getText() + " " +
+					// inverseInput.getText());
+					try {
+						changeValue(tree, value, ilv.getCriterium(), ilv.getName(), input);
+						changeValue(tree, inverseValue, inverseIlv.getCriterium(), inverseIlv.getName(), inverseInput);
+					} catch (notFoundException e) {
+						e.printStackTrace();
+					}
+					inverseInput.setText(String.valueOf(inverseValue));
+				} else {
+					input.setText(oldValue);
+				}
+			}
+
+		});
+
+	}
+
+	private void changeValue(CriteriumTree2 tree, double value, Criterium c, String name, TextField tf)
+			throws notFoundException {
+		tree.changeValue(c, name, value);
+		gridPane.fireEvent(new EnteredValue(EnteredValue.COMPARATION_VALUE_CHANGED, tree.getParent(c)));
+		tf.setText(String.valueOf(value));
 	}
 
 	private void createLabel(int i, int j, String key) {
@@ -48,29 +114,19 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 		gridPane.getChildren().add(lH);
 	}
 
-	private void createCmpValuesImputs(int i, int j, Criterium c, String name, Double v, CriteriumTree2 tree) {
-		int k = j*2+1;
+	private TextField createCmpValuesImputs(int i, int j, Double v) {
+		int k = j * 2 + 1;
 		TextField nInput = new TextField();
-		if(i-1<=j00){
+		if (i - 1 <= j) {
 			nInput.setDisable(true);
 		}
 		nInput.setMaxWidth(defInputWidth);
 		nInput.setMinWidth(defInputWidth);
 		nInput.setText(v.toString());
-		nInput.textProperty().addListener(new ChangeListener<String>() {
-			@Override
-			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				String regex = "(\\d{0,1}.\\d{0,5})|(\\d{0,2}.\\d{0,4})|(\\d{0,3}.\\d{0,3})|(\\d{0,4}.\\d{0,2})|(\\d{0,5}.\\d{0,1})";
-				if (newValue.matches(regex)) {
-					tree.changeValue(c, name, Double.parseDouble(newValue));
-					gridPane.fireEvent(new EnteredValue(EnteredValue.COMPARATION_VALUE_CHANGED));
-				} else {
-					nInput.setText(oldValue);
-				}
-			}
-		});
+
 		GridPane.setConstraints(nInput, i, k);
 		gridPane.getChildren().add(nInput);
+		return nInput;
 	}
 
 	@Override

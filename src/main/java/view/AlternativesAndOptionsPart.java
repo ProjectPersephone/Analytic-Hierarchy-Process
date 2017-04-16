@@ -93,16 +93,14 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		ComboBox<ConsistencyComputeMethod> cMethods = createConsistencyMethodsComboBox();
 		optionsPane.getChildren().add(cMethods);
 
-		//TODO change to 3 
-
-		// 4
+		// 5
 		Label sourceFolderLabel = createSourceFolderLabel();
 		optionsPane.getChildren().add(sourceFolderLabel);
 
 		TextField tfpath = createFileTextField();
 		optionsPane.getChildren().add(tfpath);
 
-		// 5
+		// 4
 		Button addAlternativeButton = setCreateXMLButton();
 		optionsPane.getChildren().add(addAlternativeButton);
 
@@ -110,27 +108,25 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 	}
 
-	
-
 	private ComboBox<ConsistencyComputeMethod> createConsistencyMethodsComboBox() {
-
-		ObservableList<ConsistencyComputeMethod> options = FXCollections
-				.observableArrayList(ConsistencyComputeMethod.maximumEigenvalueMethod());
+		ObservableList<ConsistencyComputeMethod> options = FXCollections.observableArrayList(
+				ConsistencyComputeMethod.getMaximumEigenvalueMethod(),
+				ConsistencyComputeMethod.getIndexOFdeterminantsMethod());
 		ComboBox<ConsistencyComputeMethod> cbMethods = new ComboBox<ConsistencyComputeMethod>(options);
 
-		cbMethods.setValue(ccm);
+		cbMethods.setValue(ConsistencyComputeMethod.getMaximumEigenvalueMethod());
 		cbMethods.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-				ccm = cbMethods.getValue();
+				ConsistencyComputeMethod ccm = cbMethods.getValue();
+				System.out.println("changed ccm: "+ccm);
+				pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_CONSISTENCY_METHOD, ccm));
 			}
 		});
 		GridPane.setConstraints(cbMethods, 1, 2);
 		return cbMethods;
 	}
-
-
 
 	private Label createConsistencyMethodsLabel() {
 		Label lComputingMethod = new Label("consistency method ");
@@ -146,7 +142,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 
 	private Label createSourceFolderLabel() {
 		Label lSourceFolder = new Label(sourceFolder);
-		GridPane.setConstraints(lSourceFolder, 0, 4);
+		GridPane.setConstraints(lSourceFolder, 0, 3);
 		return lSourceFolder;
 	}
 
@@ -154,7 +150,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		Button bCompute = new Button();
 		bCompute.setText("create XML");
 		bCompute.setMinWidth(DEFAULT_BUTTON_WIDTH);
-		GridPane.setConstraints(bCompute, 0, 5, 2, 1, HPos.CENTER, VPos.CENTER);
+		GridPane.setConstraints(bCompute, 0, 4, 2, 1, HPos.CENTER, VPos.CENTER);
 		bCompute.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
@@ -227,7 +223,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			}
 		});
 
-		GridPane.setConstraints(tf, 1, 4);
+		GridPane.setConstraints(tf, 1, 3);
 		return tf;
 	}
 
@@ -282,24 +278,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			}
 		});
 		GridPane.setConstraints(list, 0, 2, 2, 1);
-		// GridPane.setConstraints(list, 0, 2);
 		VBox.setVgrow(list, Priority.ALWAYS);
-
-		// list.getSelectionModel().selectedItemProperty().addListener(new
-		// ChangeListener<Alternative>() {
-		//
-		// public void changed(ObservableValue<? extends Alternative> ov,
-		// Alternative old_val, Alternative new_val) {
-		// System.out.println(old_val+" "+new_val);
-		//// list.getItems().remove(index);
-		//// tree.deleteAlternative(new_val);
-		//// list.refresh();
-		// // TODO delete alternative
-		// // TODO pane.fireEvent(new
-		// //
-		// ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
-		// }
-		// });
 		return list;
 	}
 
@@ -343,7 +322,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					list.getSelectionModel().select(newSelectedIdx);
 					// System.out.println(list.getItems());
 					// list.refresh();
-					pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
+					pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
 				}
 
 			}
@@ -383,7 +362,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		}
 		Alternative a = new Alternative(name);
 		tree.addNewAlternative(a);
-		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA));
+		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
 		return a;
 	}
 

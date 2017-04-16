@@ -3,10 +3,11 @@ package consistencyComputingMethods;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
-public class MaximumEigenvalueConsistencyComputingMethod extends ConsistencyComputeMethod {
+public class MaximumEigenvalue extends ConsistencyComputeMethod {
 
 	@Override
 	public double compute(Matrix matrix) {
+		double consistencyIndex;
 		EigenvalueDecomposition eig = matrix.eig();
 		double[] eigenvalues = eig.getRealEigenvalues();
 		int n = eigenvalues.length;
@@ -19,10 +20,8 @@ public class MaximumEigenvalueConsistencyComputingMethod extends ConsistencyComp
 				maxEig = eigenvalues[i];
 			}
 		}
-		consistencyIndex = Math.abs(maxEig - n) / (n - 1);
-		consistencyRatio = consistencyIndex / randomIndex[n];
-
-		return consistencyRatio;
+		consistencyIndex = (maxEig - n) / (n - 1);
+		return getConsistencyRatio(consistencyIndex, n);
 	}
 
 	@Override

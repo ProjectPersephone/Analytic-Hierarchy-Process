@@ -1,6 +1,7 @@
 package view;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -54,8 +55,22 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_MAX_CONSISTENCY, event -> {
 			handleConsistenyOfTree();
 		});
-		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_NUBER_OF_CRITERIA, event -> {
+		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES, event -> {
+			List<Goal> lChildren = tree.getLastChildren();
+			for (Goal c : lChildren) {
+				dataEnteringPartBuilder.refresh(c);
+			}
+			handleConsistenyOfTree();
 			refresh();
+		});
+		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_CONSISTENCY_METHOD, event -> {
+
+			dataEnteringPartBuilder.setCcm(event.getCcm());
+			// refresh(); TODO all
+
+			handleConsistenyOfTree();
+			refresh();
+
 		});
 		createTreeBranchList();
 		criteriumIndex = 0;
@@ -175,17 +190,20 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 
 	public void removeChild(TreeBranch treeBranch) {
 		try {
-			tree.deleteCriterium((Criterium) treeBranch.getCriterium());
+
+			Criterium c = (Criterium) treeBranch.getCriterium();
+			// Goal parent = tree.getParent(c);
+			tree.deleteCriterium(c);
+			Pane p = treeBranchMap.get(treeBranch);
+			Node pp = p.getParent();
+			((Pane) pp.getParent()).getChildren().remove(pp);
+			treeBranchMap.remove(treeBranch);
+
+			refresh();
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		}
 
-		Pane p = treeBranchMap.get(treeBranch);
-		Node pp = p.getParent();
-		((Pane) pp.getParent()).getChildren().remove(pp);
-		treeBranchMap.remove(treeBranch);
-
-		refresh();
 	}
 
 	public void renameCriterium(TreeBranch treeBranch, String newName) {
@@ -215,13 +233,16 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 	}
 
 	private void setTreeBranchConsistency(TreeBranch treeBranch) {
-		ConsistencyLook c;
+		Goal c = treeBranch.getCriterium();
+		dataEnteringPartBuilder.computeConsistency(c);
+
+		ConsistencyLook cl;
 		if (tree.isConsistent(treeBranch.getCriterium())) {
-			c = ConsistencyLook.CONSISTENT;
+			cl = ConsistencyLook.CONSISTENT;
 		} else {
-			c = ConsistencyLook.NOT_CONSISTENT;
+			cl = ConsistencyLook.NOT_CONSISTENT;
 		}
-		treeBranch.setConsistencyLook(c);
+		treeBranch.setConsistencyLook(cl);
 	}
 
 }

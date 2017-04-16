@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import exceptions.MalformedTreeException;
+import exceptions.notFoundException;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.Event;
@@ -21,6 +22,7 @@ public class FullTypingDataEnteringType extends DataEnteringType {
 
 	@Override
 	public void create(Goal criterium, CriteriumTree2 tree, GridPane gridPane) throws MalformedTreeException {
+//		System.out.println("-------------------------------------------------- FULL TYPING");
 		this.gridPane = gridPane;
 		List<Criterium> children = tree.getChildren(criterium);
 		int i;
@@ -56,10 +58,20 @@ public class FullTypingDataEnteringType extends DataEnteringType {
 		nInput.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				String regex = "(\\d{0,1}.\\d{0,5})|(\\d{0,2}.\\d{0,4})|(\\d{0,3}.\\d{0,3})|(\\d{0,4}.\\d{0,2})|(\\d{0,5}.\\d{0,1})";
+				String regex = "(\\d{0,1}\\.{0,1}\\d{0,5})|(\\d{0,2}\\.{0,1}\\d{0,4})|(\\d{0,3}\\.{0,1}\\d{0,3})|(\\d{0,4}\\.{0,1}\\d{0,2})|(\\d{0,5}\\.{0,1}\\d{0,1})";
 				if (newValue.matches(regex)) {
+					System.out.println("con bef: "+c.getConsistencyValue());
+					System.out.println(tree);
+					
 					tree.changeValue(c, name, Double.parseDouble(newValue));
-					gridPane.fireEvent(new EnteredValue(EnteredValue.COMPARATION_VALUE_CHANGED));
+					System.out.println(tree);
+					System.out.println("con aft: "+c.getConsistencyValue());
+					try {
+						gridPane.fireEvent(new EnteredValue(EnteredValue.COMPARATION_VALUE_CHANGED, tree.getParent(c)));
+					} catch (notFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				} else {
 					nInput.setText(oldValue);
 				}

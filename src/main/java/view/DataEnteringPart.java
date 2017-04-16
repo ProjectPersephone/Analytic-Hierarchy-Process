@@ -44,10 +44,12 @@ public class DataEnteringPart extends ViewPart {
 	private HBox consistencyPane;
 	private HBox dataEnteringTypePane;
 	private Goal lastShowed;
+	private ConsistencyComputeMethod ccm;
 
 	public DataEnteringPart(CriteriumTree2 tree) {
 		super(tree);
 		pane = createPane();
+		ccm = ConsistencyComputeMethod.getMaximumEigenvalueMethod();
 	}
 
 	@Override
@@ -65,13 +67,19 @@ public class DataEnteringPart extends ViewPart {
 	}
 
 	public void createDataEnteringComponents(Goal criterium) {
-		lastShowed = criterium;
-		showMainLabel(criterium);
-		showEnteringTypeCB(criterium);
-
 		try {
+
+			lastShowed = criterium;
+			handleChangedConsistency(criterium);
+			showMainLabel(criterium);
+			showEnteringTypeCB(criterium);
 			createInputs(criterium);
+
 		} catch (MalformedTreeException e) {
+			showAlert(e);
+		} catch (NumberFormatException e) {
+			showAlert(e);
+		} catch (notFoundException e) {
 			showAlert(e);
 		}
 	}
@@ -85,30 +93,39 @@ public class DataEnteringPart extends ViewPart {
 		dataEnteringTypePane.getChildren().add(depMethods);
 	}
 
-	private void createInputs(Goal criterium) throws MalformedTreeException {
+	private void createInputs(Goal criterium) throws MalformedTreeException, NumberFormatException, notFoundException {
 		gridPane.getChildren().clear();
 		criterium.getDataEnteringType().create(criterium, tree, gridPane);
 		gridPane.addEventHandler(EnteredValue.COMPARATION_VALUE_CHANGED, event -> {
-			handleComparationValueChanged();
+			handleComparationValueChanged(event.getCriterium());
 		});
 	}
 
-	public void handleComparationValueChanged() {
+	private void handleComparationValueChanged(Goal criterium) {
 		try {
-			calculateConsistency(lastShowed);
+			handleChangedConsistency(criterium);
 		} catch (MalformedTreeException e) {
 			showAlert(e);
 		}
 	}
 
-	private void calculateConsistency(Goal parent) throws MalformedTreeException {
+	public void computeConsistency(Goal c) {
 		ConsistencyCalculator cc = new ConsistencyCalculator();
-		parent.setConsistencyValue(cc.compute(createMatrix(), ccm));
+		// System.out.println("ccm: " + ccm);
+		try {
+			c.setConsistencyValue(cc.compute(createMatrix(c), ccm));
+		} catch (MalformedTreeException e) {
+			showAlert(e);
+		}
+	}
+
+	private void handleChangedConsistency(Goal parent) throws MalformedTreeException {
+		computeConsistency(parent);
 		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_SINGLE_CONSISTENCY));
 	}
 
-	private Matrix createMatrix() throws MalformedTreeException {
-		List<Criterium> children = tree.getChildren(lastShowed);
+	private Matrix createMatrix(Goal criterium) throws MalformedTreeException {
+		List<Criterium> children = tree.getChildren(criterium);
 		Matrix m = new Matrix(children.size(), children.size());
 		int i;
 		for (int j = 0; j < children.size(); j++) {
@@ -126,7 +143,7 @@ public class DataEnteringPart extends ViewPart {
 	}
 
 	public void showConsistency(double consistencyValue) {
-
+		// System.out.println("cv: " + consistencyValue);
 		try {
 			if (lastShowed != null) {
 				consistencyPane.getChildren().clear();
@@ -156,11 +173,24 @@ public class DataEnteringPart extends ViewPart {
 		labelPane.getChildren().add(cNameLabel);
 	}
 
+	public void refresh(Goal c) {
+		if (c != null) {
+			try {
+				handleChangedConsistency(c);
+				// createDataEnteringComponents(c);
+			} catch (MalformedTreeException e) {
+				showAlert(e);
+			}
+		}
+	}
+
 	public void refresh() {
 		if (lastShowed != null) {
 			try {
+				handleChangedConsistency(lastShowed);
 				createDataEnteringComponents(lastShowed);
-				calculateConsistency(lastShowed);
+				System.out.println("lastShowed.getConsistencyValue()" + lastShowed.getConsistencyValue());
+				showConsistency(lastShowed.getConsistencyValue());
 			} catch (MalformedTreeException e) {
 				showAlert(e);
 			}
@@ -211,19 +241,25 @@ public class DataEnteringPart extends ViewPart {
 
 	private ComboBox<DataEnteringType> createDataEnteringTypeComboBox(Goal c) {
 
-		ObservableList<DataEnteringType> options = FXCollections
-				.observableArrayList(DataEnteringType.getFullTypingConsistencyType(), DataEnteringType.getHalfConsistencyType());
+		ObservableList<DataEnteringType> options = FXCollections.observableArrayList(
+				DataEnteringType.getFullTypingConsistencyType(), DataEnteringType.getHalfConsistencyType());
 		ComboBox<DataEnteringType> methods = new ComboBox<DataEnteringType>(options);
 		methods.setValue(c.getDataEnteringType());
 		methods.setOnAction(new EventHandler<ActionEvent>() {
 
 			@Override
 			public void handle(ActionEvent event) {
-				
+
 				try {
 					c.setDataEnteringType(methods.getValue());
 					createInputs(c);
 				} catch (MalformedTreeException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NumberFormatException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (notFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -231,6 +267,10 @@ public class DataEnteringPart extends ViewPart {
 		});
 		GridPane.setConstraints(methods, 1, 3);
 		return methods;
+	}
+
+	public void setCcm(ConsistencyComputeMethod ccm) {
+		this.ccm = ccm;
 	}
 
 }

@@ -26,11 +26,11 @@ public abstract class ViewPart {
 	protected final double DEFAULT_HEIGHT = 350.0;
 	protected final double DEFAULT_BUTTON_WIDTH = 150.0;
 	protected CriteriumTree2 tree;
-	protected ConsistencyComputeMethod ccm;
+//	protected ConsistencyComputeMethod ccm;
 
 	public ViewPart(CriteriumTree2 tree){
 		this.tree = tree;
-		ccm=ConsistencyComputeMethod.maximumEigenvalueMethod();
+//		ccm=ConsistencyComputeMethod.getMaximumEigenvalueMethod();
 	}
 
 	public Pane getPart() {

@@ -1,6 +1,8 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,7 @@ public class CriteriumTree2 {
 			newC.setParentId(e.getKey().getId());
 			addNewCriteriumToListAndCriteriaValueList(e.getValue(), newC);
 		}
+		sort(alternativeAsCriteriumList);
 	}
 
 	public void deleteAlternative(Alternative new_val) {
@@ -119,6 +122,7 @@ public class CriteriumTree2 {
 			newC.setParentId(g.getId());
 			children.add(newC);
 		}
+		sort(children);
 		alternativesTree.put(g, children);
 		return children;
 	}
@@ -133,8 +137,20 @@ public class CriteriumTree2 {
 		}
 
 		List<Criterium> children = criteriaTree.get(parent);
+		sort(children);
 		addNewCriteriumToListAndCriteriaValueList(children, newCriterium);
 		criteriaTree.put(newCriterium, new ArrayList<Criterium>());
+	}
+
+	private void sort(List<Criterium> children) {
+		children.sort(new Comparator<Criterium>() {
+
+			@Override
+			public int compare(Criterium arg0, Criterium arg1) {
+				return arg0.getName().compareTo(arg1.getName());
+			}
+
+		});
 	}
 
 	public Goal getParent(Criterium c) throws notFoundException {
@@ -179,14 +195,17 @@ public class CriteriumTree2 {
 	public void renameCriterium(Goal criterium, String newName) throws notFoundException, MalformedTreeException {
 		if (criterium instanceof Criterium) {
 			Goal parent = getParent((Criterium) criterium);
-			for (Criterium c : getChildren(parent)) {
+			List<Criterium> children = getChildren(parent);
+
+			for (Criterium c : children) {
 				Map<String, Double> values = c.getValues();
 				Double v = values.get(criterium.getName());
 				values.remove(criterium.getName());
 				c.addValuesOf(newName, v);
 			}
+			criterium.setName(newName);
+			sort(children);
 		}
-		criterium.setName(newName);
 	}
 
 	public void changeValue(Criterium c, String name, Double value) {
@@ -201,6 +220,7 @@ public class CriteriumTree2 {
 	private void addNewCriteriumToListAndCriteriaValueList(List<Criterium> criteriumList, Criterium newCriterium) {
 		criteriumList.add(newCriterium);
 		addNewCriteriumToCriteriaValueList(criteriumList, newCriterium);
+		sort(criteriumList);
 	}
 
 	private void addNewCriteriumToCriteriaValueList(List<Criterium> criteriumList, Criterium newCriterium) {
@@ -208,6 +228,17 @@ public class CriteriumTree2 {
 			alt.addValuesOf(newCriterium.getName(), 1);
 			newCriterium.addValuesOf(alt.getName(), 1);
 		}
+	}
+
+	public void removeCriteria() {
+		criteriaTree.entrySet().removeIf(e -> {
+			if (e.getKey().equals(goal)) {
+				return false;
+			}
+			return true;
+		});
+		criteriaTree.get(goal).clear();
+		goal.setName("goal");
 	}
 
 	public Double getMaxConsistencyValue() {

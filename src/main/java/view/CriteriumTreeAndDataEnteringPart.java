@@ -1,21 +1,28 @@
 package view;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import events.ChangeComputingUnit;
-import events.ChangeConsistencyEvent;
+import events.ConsistencyEvent;
 import exceptions.MalformedTreeException;
 import exceptions.notFoundException;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -52,10 +59,10 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 
 	public CriteriumTreeAndDataEnteringPart(CriteriumTree2 tree, Pane alternativesAndOptionsPart) {
 		super(tree);
-		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_MAX_CONSISTENCY, event -> {
+		alternativesAndOptionsPart.addEventHandler(ConsistencyEvent.CHANGED_MAX_CONSISTENCY, event -> {
 			handleConsistenyOfTree();
 		});
-		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES, event -> {
+		alternativesAndOptionsPart.addEventHandler(ConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES, event -> {
 			List<Goal> lChildren = tree.getLastChildren();
 			for (Goal c : lChildren) {
 				dataEnteringPartBuilder.refresh(c);
@@ -63,7 +70,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 			handleConsistenyOfTree();
 			refresh();
 		});
-		alternativesAndOptionsPart.addEventHandler(ChangeConsistencyEvent.CHANGED_CONSISTENCY_METHOD, event -> {
+		alternativesAndOptionsPart.addEventHandler(ConsistencyEvent.CHANGED_CONSISTENCY_METHOD, event -> {
 
 			dataEnteringPartBuilder.setCcm(event.getCcm());
 			// refresh(); TODO all
@@ -72,10 +79,28 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 			refresh();
 
 		});
+		alternativesAndOptionsPart.addEventHandler(ConsistencyEvent.CHECK_CONSISTENCY, event -> {
+			checkConsistencyOfAllBranches();
+		});
 		createTreeBranchList();
 		criteriumIndex = 0;
 		pane = createPane();
 		lastModifiedBranch = (TreeBranch) treeBranchMap.keySet().toArray()[0];
+	}
+
+	private void checkConsistencyOfAllBranches() {
+		boolean con = true;
+		for (Entry<TreeBranch, Pane> e : treeBranchMap.entrySet()) {
+			Goal c = e.getKey().getCriterium();
+			dataEnteringPartBuilder.computeConsistency(c);
+
+			if (!tree.isConsistent(c)) {
+				con = false;
+			}
+		}
+		if (!con) {
+			showAlert("Tree branches are not consistent!");
+		}
 	}
 
 	private void handleConsistenyOfTree() {
@@ -94,19 +119,74 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 
 	@Override
 	protected Pane createPane() {
-		Pane hBox = new HBox();
+		HBox hBox = new HBox();
 		VBox vCriteriumTreePane = createCriteriumTreePane();
+
 		Pane vDataEnteringPartPane = createDataEnteringPartPane();
 		hBox.getChildren().addAll(vCriteriumTreePane, vDataEnteringPartPane);
 		return hBox;
 	}
 
 	private VBox createCriteriumTreePane() {
+		VBox box = new VBox();
+		box.setSpacing(1.0);
+
+		box.setAlignment(Pos.CENTER);
+		Label ctl = createLabel("criteria tree");
+		// VBox.setMargin(ctl, new Insets(1.0));
+		box.getChildren().add(ctl);
+
 		VBox vCriteriumTreePane = new VBox();
 		vCriteriumTreePane.setAlignment(Pos.CENTER);
+		MenuBar menuBar = createMenuBar();
+
+		vCriteriumTreePane.getChildren().addAll(menuBar);
 		ScrollPane criteriumTreePane = getCriteriumTreePane();
-		vCriteriumTreePane.getChildren().addAll(createLabel("criteria tree"), criteriumTreePane);
-		return vCriteriumTreePane;
+
+		vCriteriumTreePane.getChildren().add(criteriumTreePane);
+		box.getChildren().add(vCriteriumTreePane);
+		return box;
+	}
+
+	private MenuBar createMenuBar() {
+		MenuBar menuBar = new MenuBar();
+
+		Menu menuOperation = new Menu("Operation");
+
+		MenuItem menuClear = clearTree();
+		menuOperation.getItems().addAll(menuClear);
+		menuBar.getMenus().addAll(menuOperation);
+
+		return menuBar;
+	}
+
+	private MenuItem clearTree() {
+		MenuItem menuClear = new MenuItem("Clear");
+		menuClear.setOnAction(event -> {
+
+			while (treeBranchMap.size() > 1) {
+				Iterator<Entry<TreeBranch, Pane>> it = treeBranchMap.entrySet().iterator();
+				TreeBranch toRemove = null;
+				while (it.hasNext()) {
+					Entry<TreeBranch, Pane> entry = it.next();
+					TreeBranch tb = entry.getKey();
+					if (!tb.getCriterium().equals(tree.getGoal())) {
+						if (entry.getValue().getChildren().isEmpty()) {
+							toRemove = tb;
+							break;
+						}
+					}
+					if (treeBranchMap.size() <= 1) {
+						break;
+					}
+				}
+				if (toRemove != null) {
+					removeChild(toRemove);
+				}
+			}
+		});
+
+		return menuClear;
 	}
 
 	private Pane createDataEnteringPartPane() {
@@ -117,7 +197,7 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 		Pane dataEnteringPart = dataEnteringPartBuilder.getPart();
 		vDataEnteringPartPane.getChildren().addAll(createLabel("comparation values"), dataEnteringPart);
 
-		dataEnteringPart.addEventHandler(ChangeConsistencyEvent.CHANGED_SINGLE_CONSISTENCY, event -> {
+		dataEnteringPart.addEventHandler(ConsistencyEvent.CHANGED_SINGLE_CONSISTENCY, event -> {
 			setTreeBranchConsistency(lastModifiedBranch);
 			setDataEnteringPartConsistency(lastModifiedBranch);
 		});
@@ -132,12 +212,16 @@ public class CriteriumTreeAndDataEnteringPart extends ViewPart {
 
 	private ScrollPane getCriteriumTreePane() {
 		ScrollPane sp = new ScrollPane();
-		sp.setPrefSize(treeWidth, DEFAULT_HEIGHT);
+
+		sp.setPrefSize(treeWidth, DEFAULT_HEIGHT - 30.0);
 		VBox treeBox = new VBox();
+
 		treeBox.setAlignment(Pos.CENTER);
 		treeBox.setMinWidth(treeWidth - 20);
 		createGoalPane(treeBox);
+
 		sp.setContent(treeBox);
+
 		return sp;
 	}
 

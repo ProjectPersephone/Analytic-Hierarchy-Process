@@ -1,8 +1,14 @@
 package view;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.Node;
@@ -13,7 +19,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import AHPSolver.AHPLogic;
+import AHPSolver.XMLCreatorLogic2;
 import exceptions.InvalidXMLStructureException;
+import exceptions.WrongFileNameException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -25,6 +33,8 @@ import javafx.geometry.VPos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -32,6 +42,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.util.Callback;
+import model.Alternative;
 import model.CriteriumTree2;
 import model.PriorityVector;
 import priorityVecorComputingMethods.PriorityVectorComputeMethod;
@@ -47,7 +59,7 @@ public class ProcessingPart extends ViewPart {
 	public ProcessingPart(CriteriumTree2 tree) {
 		super(tree);
 		this.sourceFolder = "XML/";
-		this.fileName = "testXML.xml";
+		this.fileName = "example.xml";
 		this.computingMethod = PriorityVectorComputeMethod.eigenvectorMethod();
 		pane = createPane();
 
@@ -134,6 +146,8 @@ public class ProcessingPart extends ViewPart {
 					compute();
 				} catch (SAXException | IOException | ParserConfigurationException | InvalidXMLStructureException e) {
 					e.printStackTrace();
+				} catch (WrongFileNameException e) {
+					showAlert(e);
 				}
 			}
 		});
@@ -161,6 +175,8 @@ public class ProcessingPart extends ViewPart {
 					compute();
 				} catch (SAXException | IOException | ParserConfigurationException | InvalidXMLStructureException e) {
 					e.printStackTrace();
+				} catch (WrongFileNameException e) {
+					showAlert(e);
 				}
 			}
 		});
@@ -175,23 +191,93 @@ public class ProcessingPart extends ViewPart {
 		return lSourceFolder;
 	}
 
-	private void compute()
-			throws SAXException, IOException, ParserConfigurationException, InvalidXMLStructureException {
+	private void compute() throws SAXException, IOException, ParserConfigurationException, InvalidXMLStructureException,
+			WrongFileNameException {
 		String filePath = sourceFolder + fileName;
-		AHPLogic logic = new AHPLogic();
-		Document doc = logic.getXMLDocument(filePath);
 
-		org.w3c.dom.Node goal = logic.getGoal(doc);
-		List<String> alternatives = logic.getAlternativesNames(logic.getAlternatives(doc));
+		String regex = "^(\\/{0,1}[a-zA-Z0-9-_]+)+\\.xml$";
+		if ((filePath.matches(regex)) && (checkFileExists(filePath))) {
+			AHPLogic logic = new AHPLogic();
+			Document doc = logic.getXMLDocument(filePath);
 
-		PriorityVector spv = logic.execute(goal, computingMethod);
-		showResult(alternatives, spv);
+			org.w3c.dom.Node goal = logic.getGoal(doc);
+			List<String> alternatives = logic.getAlternativesNames(logic.getAlternatives(doc));
+
+			PriorityVector spv = logic.execute(goal, computingMethod);
+
+			Map<String, Double> results = new TreeMap<>();
+			for (int j = 0; j < alternatives.size(); j++) {
+				results.put(alternatives.get(j), spv.get(j));
+			}
+			showResult2(results);
+
+			// showResult(alternatives, spv);
+		} else {
+			throw new WrongFileNameException("File path is invalid.");
+		}
+
+	}
+
+	private void createSortButton(Map<String, Double> results) {
+		Button button = new Button("sort");
+		button.setMinWidth(DEFAULT_BUTTON_WIDTH);
+		button.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+
+				showResult2(results.entrySet().stream().sorted(Entry.comparingByValue())
+						.collect(Collectors.toMap(Entry::getKey, Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new)));
+			}
+		});
+		GridPane.setConstraints(button, 0, 3);
+		resultPane.getChildren().addAll(button);
+	}
+
+	private void showResult2(Map<String, Double> results) {
+		resultPane.getChildren().clear();
+		ListView<String> lv = new ListView<>();
+		List<String> l = new ArrayList<String>();
+		int i = 1;
+		for (Entry<String, Double> e : results.entrySet()) {
+			l.add(i + ". " + String.format("%4s", e.getKey()) + ": " + String.format("%.8f", e.getValue()));
+			i++;
+		}
+		ObservableList<String> observableList = FXCollections.observableList(l);
+		lv.setItems(observableList);
+		lv.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
+			@Override
+			public ListCell<String> call(ListView<String> list) {
+				return new ListCell<String>() {
+					@Override
+					protected void updateItem(String item, boolean empty) {
+						super.updateItem(item, empty);
+						if (item != null) {
+							setText(item);
+						}
+						if (empty) {
+							setText(null);
+						}
+					}
+				};
+			}
+		});
+		GridPane.setConstraints(lv, 0, 2);
+		resultPane.getChildren().addAll(lv);
+		createSortButton(results);
+	}
+
+	private boolean checkFileExists(String path) {
+		File f = new File(path);
+		if (f.exists()) {
+			return true;
+		}
+		return false;
 	}
 
 	private void showResult(List<String> alternatives, PriorityVector spv) {
 
 		resultPane.getChildren().clear();
-
 		for (int j = 0; j < alternatives.size(); j++) {
 			Text alt = new Text(String.format("%4s", alternatives.get(j)) + ":");
 			alt.setFont(Font.font("Verdena", FontWeight.BOLD, 12));

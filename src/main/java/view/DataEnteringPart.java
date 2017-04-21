@@ -9,7 +9,7 @@ import AHPSolver.ConsistencyCalculator;
 import Jama.Matrix;
 import consistencyComputingMethods.ConsistencyComputeMethod;
 import dataEnteringType.DataEnteringType;
-import events.ChangeConsistencyEvent;
+import events.ConsistencyEvent;
 import events.EnteredValue;
 import exceptions.MalformedTreeException;
 import exceptions.notFoundException;
@@ -21,9 +21,12 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -55,13 +58,14 @@ public class DataEnteringPart extends ViewPart {
 	@Override
 	protected Pane createPane() {
 		Pane vBox = new VBox();
+//		vBox.getChildren().add(createMenuBar());
 		vBox.getChildren().add(createScrollpane());
 		return vBox;
 	}
 
 	private ScrollPane createScrollpane() {
 		ScrollPane sp = new ScrollPane();
-		sp.setPrefSize(DEFAULT_HEIGHT, DEFAULT_HEIGHT);
+		sp.setPrefSize(DEFAULT_HEIGHT, DEFAULT_HEIGHT+0.0);
 		sp.setContent(arrangeScrollPaneContent());
 		return sp;
 	}
@@ -121,7 +125,7 @@ public class DataEnteringPart extends ViewPart {
 
 	private void handleChangedConsistency(Goal parent) throws MalformedTreeException {
 		computeConsistency(parent);
-		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_SINGLE_CONSISTENCY));
+		pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHANGED_SINGLE_CONSISTENCY));
 	}
 
 	private Matrix createMatrix(Goal criterium) throws MalformedTreeException {
@@ -198,13 +202,11 @@ public class DataEnteringPart extends ViewPart {
 	}
 
 	private Pane arrangeScrollPaneContent() {
-		Pane vBox = new VBox();
-
+		VBox vBox = new VBox();
 		arrangeLabelPane();
 		arrangeEnteringTypePane();
 		arrangeGridPane();
 		arrangeConsistencyPane();
-
 		vBox.getChildren().addAll(labelPane, dataEnteringTypePane, gridPane, consistencyPane);
 		return vBox;
 	}
@@ -213,6 +215,7 @@ public class DataEnteringPart extends ViewPart {
 		labelPane = new VBox();
 		labelPane.setAlignment(Pos.BOTTOM_CENTER);
 		labelPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
+		
 	}
 
 	private void arrangeEnteringTypePane() {

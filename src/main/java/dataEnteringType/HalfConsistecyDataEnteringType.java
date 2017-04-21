@@ -1,6 +1,7 @@
 package dataEnteringType;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,10 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 			throws MalformedTreeException, NumberFormatException, notFoundException {
 		this.gridPane = gridPane;
 		List<Criterium> children = tree.getChildren(criterium);
+
+		System.out.println(children);
+		sort(children);
+		System.out.println(children);
 
 		List<InputListenerValues> list = new ArrayList<>();
 
@@ -64,6 +69,18 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 			}
 		}
 
+	}
+
+	private List<Criterium> sort(List<Criterium> children) {
+		children.sort(new Comparator<Criterium>() {
+
+			@Override
+			public int compare(Criterium arg0, Criterium arg1) {
+				return arg0.getName().compareTo(arg1.getName());
+			}
+
+		});
+		return children;
 	}
 
 	private void addListenerToInput(InputListenerValues ilv, InputListenerValues inverseIlv, CriteriumTree2 tree)

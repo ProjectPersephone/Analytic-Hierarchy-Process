@@ -8,7 +8,7 @@ import javax.xml.transform.TransformerException;
 import AHPSolver.XMLCreatorLogic2;
 import consistencyComputingMethods.ConsistencyComputeMethod;
 import dataEnteringType.DataEnteringType;
-import events.ChangeConsistencyEvent;
+import events.ConsistencyEvent;
 import exceptions.AlreadyExistsException;
 import exceptions.FileAlreadyExistsException;
 import exceptions.MalformedTreeException;
@@ -53,7 +53,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 	public AlternativesAndOptionsPart(CriteriumTree2 tree) {
 		super(tree);
 		sourceFolder = "XML/";
-		fileName = "testXML.xml";
+		fileName = "example.xml";
 		tree.setAlternatives(FXCollections.observableArrayList());
 		tree.setMaxConsistencyValue(0.1);
 		pane = createPane();
@@ -120,8 +120,8 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			@Override
 			public void handle(ActionEvent event) {
 				ConsistencyComputeMethod ccm = cbMethods.getValue();
-				System.out.println("changed ccm: "+ccm);
-				pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_CONSISTENCY_METHOD, ccm));
+				System.out.println("changed ccm: " + ccm);
+				pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHANGED_CONSISTENCY_METHOD, ccm));
 			}
 		});
 		GridPane.setConstraints(cbMethods, 1, 2);
@@ -157,6 +157,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			public void handle(ActionEvent event) {
 
 				try {
+					pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHECK_CONSISTENCY));
 					String filePath = sourceFolder + fileName;
 					String regex = "^(\\/{0,1}[a-zA-Z0-9-_]+)+\\.xml$";
 					if (filePath.matches(regex)) {
@@ -199,7 +200,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 				String regex = "[0-9]{0,3}\\.{0,1}\\d{0,10}";
 				if (newValue.matches(regex)) {
 					tree.setMaxConsistencyValue(Double.parseDouble(newValue));
-					pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_MAX_CONSISTENCY));
+					pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHANGED_MAX_CONSISTENCY));
 				} else {
 					tf.setText(oldValue);
 				}
@@ -322,7 +323,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 					list.getSelectionModel().select(newSelectedIdx);
 					// System.out.println(list.getItems());
 					// list.refresh();
-					pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
+					pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
 				}
 
 			}
@@ -362,7 +363,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 		}
 		Alternative a = new Alternative(name);
 		tree.addNewAlternative(a);
-		pane.fireEvent(new ChangeConsistencyEvent(ChangeConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
+		pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
 		return a;
 	}
 

@@ -56,4 +56,10 @@ public abstract class ViewPart {
 		alert.showAndWait();
 		e.printStackTrace();
 	}
+	protected void showAlert(String e) {
+		Alert alert = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Warning");
+		alert.setContentText(e);
+		alert.showAndWait();
+	}
 }

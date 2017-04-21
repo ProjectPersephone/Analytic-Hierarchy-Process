@@ -12,7 +12,7 @@ public abstract class DataEnteringType {
 	public abstract void create(Goal criterium, CriteriumTree2 tree, GridPane gridPane) throws MalformedTreeException, NumberFormatException, notFoundException;
 
 	public static DataEnteringType getHalfConsistencyType() {
-		return new HalfConsistecyDataEnteringType();
+		return new HalfTypingDataEnteringType();
 	}
 	
 	public static DataEnteringType getFullTypingConsistencyType(){

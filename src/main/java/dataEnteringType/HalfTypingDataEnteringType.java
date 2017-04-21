@@ -20,7 +20,7 @@ import model.Criterium;
 import model.CriteriumTree2;
 import model.Goal;
 
-public class HalfConsistecyDataEnteringType extends DataEnteringType {
+public class HalfTypingDataEnteringType extends DataEnteringType {
 
 	GridPane gridPane;
 
@@ -29,10 +29,6 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 			throws MalformedTreeException, NumberFormatException, notFoundException {
 		this.gridPane = gridPane;
 		List<Criterium> children = tree.getChildren(criterium);
-
-		System.out.println(children);
-		sort(children);
-		System.out.println(children);
 
 		List<InputListenerValues> list = new ArrayList<>();
 
@@ -71,37 +67,26 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 
 	}
 
-	private List<Criterium> sort(List<Criterium> children) {
-		children.sort(new Comparator<Criterium>() {
-
-			@Override
-			public int compare(Criterium arg0, Criterium arg1) {
-				return arg0.getName().compareTo(arg1.getName());
-			}
-
-		});
-		return children;
-	}
-
 	private void addListenerToInput(InputListenerValues ilv, InputListenerValues inverseIlv, CriteriumTree2 tree)
 			throws NumberFormatException, notFoundException {
 		TextField input = ilv.getTextField();
 		TextField inverseInput = inverseIlv.getTextField();
-		changeValue(tree, 1 / Double.parseDouble(input.getText()), inverseIlv.getCriterium(), inverseIlv.getName(),
-				inverseInput);
+		double value = Double.parseDouble(input.getText());
+		value = checkIfInfinity(value);
+		changeValue(tree, 1 / value, inverseIlv.getCriterium(), inverseIlv.getName(), inverseInput);
 		input.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-				String regex = "(\\d{0,1}\\.{0,1}\\d{0,5})|(\\d{0,2}\\.{0,1}\\d{0,4})|(\\d{0,3}\\.{0,1}\\d{0,3})|(\\d{0,4}\\.{0,1}\\d{0,2})|(\\d{0,5}\\.{0,1}\\d{0,1})";
+				String regex = "([0-9]{0,1}\\.{0,1}[0-9]{0,5})|([0-9]{0,2}\\.{0,1}[0-9]{0,4})|([0-9]{0,3}\\.{0,1}[0-9]{0,3})|([0-9]{0,4}\\.{0,1}[0-9]{0,2})|([0-9]{0,5}\\.{0,1}[0-9]{0,1})";
 				if (newValue.matches(regex)) {
 
 					double value = Double.parseDouble(newValue);
-					double inverseValue = 1. / value;
+					double inverseValue = 1. / checkIfInfinity(value);
 
 					// System.out.println("tf: " + input.getText() + " " +
 					// inverseInput.getText());
 					try {
-						changeValue(tree, value, ilv.getCriterium(), ilv.getName(), input);
+						changeValue(tree, value, ilv.getCriterium(), ilv.getName());
 						changeValue(tree, inverseValue, inverseIlv.getCriterium(), inverseIlv.getName(), inverseInput);
 					} catch (notFoundException e) {
 						e.printStackTrace();
@@ -114,6 +99,18 @@ public class HalfConsistecyDataEnteringType extends DataEnteringType {
 
 		});
 
+	}
+
+	private double checkIfInfinity(double value) {
+		if (value == 0) {
+			value = Double.POSITIVE_INFINITY;
+		}
+		return value;
+	}
+
+	private void changeValue(CriteriumTree2 tree, double value, Criterium c, String name) throws notFoundException {
+		tree.changeValue(c, name, value);
+		gridPane.fireEvent(new EnteredValue(EnteredValue.COMPARATION_VALUE_CHANGED, tree.getParent(c)));
 	}
 
 	private void changeValue(CriteriumTree2 tree, double value, Criterium c, String name, TextField tf)

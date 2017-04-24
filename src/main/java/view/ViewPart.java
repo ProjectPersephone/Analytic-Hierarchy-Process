@@ -50,15 +50,21 @@ public abstract class ViewPart {
 	protected abstract Pane createPane();
 
 	protected void showAlert(Exception e) {
-		Alert alert = new Alert(AlertType.INFORMATION);
+		Alert alert = new Alert(AlertType.ERROR);
 		alert.setTitle("Error");
 		alert.setContentText(e.getMessage());
 		alert.showAndWait();
 		e.printStackTrace();
 	}
 	protected void showAlert(String e) {
-		Alert alert = new Alert(AlertType.INFORMATION);
+		Alert alert = new Alert(AlertType.WARNING);
 		alert.setTitle("Warning");
+		alert.setContentText(e);
+		alert.showAndWait();
+	}
+	protected void showSuccessMessage(String e) {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Success");
 		alert.setContentText(e);
 		alert.showAndWait();
 	}

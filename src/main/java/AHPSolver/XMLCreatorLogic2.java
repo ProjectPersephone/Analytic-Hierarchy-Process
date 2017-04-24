@@ -99,20 +99,20 @@ public class XMLCreatorLogic2 {
 		
 	}
 
-	private Map<Criterium, Element> createCriteriumElementMap(CriteriumTree cTree) {
-		Map<Criterium, Element> ceMap = new HashMap<Criterium, Element>();
-		int i = 1;
-		while (!cTree.getStageCriteria(i).isEmpty()) {
-			List<Goal> cList = cTree.getStageCriteria(i);
-			for (Goal g : cList) {
-				Criterium c = (Criterium) g;
-				Element eCriterium = createCriterium(c);
-				ceMap.put(c, eCriterium);
-			}
-			i++;
-		}
-		return ceMap;
-	}
+//	private Map<Criterium, Element> createCriteriumElementMap(CriteriumTree cTree) {
+//		Map<Criterium, Element> ceMap = new HashMap<Criterium, Element>();
+//		int i = 1;
+//		while (!cTree.getStageCriteria(i).isEmpty()) {
+//			List<Goal> cList = cTree.getStageCriteria(i);
+//			for (Goal g : cList) {
+//				Criterium c = (Criterium) g;
+//				Element eCriterium = createCriterium(c);
+//				ceMap.put(c, eCriterium);
+//			}
+//			i++;
+//		}
+//		return ceMap;
+//	}
 
 	private Element createElement(Goal c) {
 		if (c instanceof Criterium) {
@@ -126,19 +126,20 @@ public class XMLCreatorLogic2 {
 
 	private Element createCriterium(Criterium c) {
 		Element eCriterium = doc.createElement("criteria");
-		eCriterium.setAttribute("name", c.getName());
+		eCriterium.setAttribute("name", c.getName().replace(" ", "_"));
 
 		for (Entry<String, Double> entry : c.getValues().entrySet()) {
 			String key = entry.getKey();
 			Double value = entry.getValue();
-			eCriterium.setAttribute(key, String.valueOf(value));
+			
+			eCriterium.setAttribute(key.replace(" ", "_"), String.valueOf(value).replace(" ", "_"));
 		}
 		return eCriterium;
 	}
 
 	private Element createGoal(Goal goal) {
 		Element eGoal = doc.createElement("goal");
-		eGoal.setAttribute("name", goal.getName());
+		eGoal.setAttribute("name", goal.getName().replace(" ", "_"));
 		eGoal.appendChild(doc.createTextNode("\n"));
 		rootElement.appendChild(eGoal);
 		return eGoal;
@@ -147,7 +148,7 @@ public class XMLCreatorLogic2 {
 	private void createXMLFile(String path)
 			throws FileAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
 		if (checkFileExists(path)) {
-			throw new FileAlreadyExistsException();
+			throw new FileAlreadyExistsException("File already exists.");
 		}
 
 		rootElement.appendChild(doc.createTextNode("\n"));
@@ -170,7 +171,7 @@ public class XMLCreatorLogic2 {
 		for (int i = 0; i < list.size(); i++) {
 			Element alt = doc.createElement("alternative");
 			Alternative a = list.get(i);
-			alt.setAttribute("name", a.getName());
+			alt.setAttribute("name", a.getName().replace(" ", "_"));
 			alts.appendChild(alt);
 		}
 	}

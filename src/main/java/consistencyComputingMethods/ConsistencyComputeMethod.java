@@ -21,7 +21,7 @@ public abstract class ConsistencyComputeMethod {
 		return new MaximumEigenvalue();
 	}
 	
-	public static IndexOfDeterminants getIndexOFdeterminantsMethod() {
+	public static IndexOfDeterminants getIndexOfdeterminantsMethod() {
 		return new IndexOfDeterminants();
 	}
 }

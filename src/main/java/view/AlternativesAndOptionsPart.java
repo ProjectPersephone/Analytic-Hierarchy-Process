@@ -111,7 +111,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 	private ComboBox<ConsistencyComputeMethod> createConsistencyMethodsComboBox() {
 		ObservableList<ConsistencyComputeMethod> options = FXCollections.observableArrayList(
 				ConsistencyComputeMethod.getMaximumEigenvalueMethod(),
-				ConsistencyComputeMethod.getIndexOFdeterminantsMethod());
+				ConsistencyComputeMethod.getIndexOfdeterminantsMethod());
 		ComboBox<ConsistencyComputeMethod> cbMethods = new ComboBox<ConsistencyComputeMethod>(options);
 
 		cbMethods.setValue(ConsistencyComputeMethod.getMaximumEigenvalueMethod());
@@ -165,6 +165,7 @@ public class AlternativesAndOptionsPart extends ViewPart {
 						xml = new XMLCreatorLogic2();
 						xml.execute(filePath, tree);
 						System.out.println("XML createrd");
+						showSuccessMessage("XML created.");
 					} else {
 						throw new WrongFileNameException("File path is invalid.");
 					}

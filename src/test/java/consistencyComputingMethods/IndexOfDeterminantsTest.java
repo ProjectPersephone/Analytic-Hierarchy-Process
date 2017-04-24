@@ -37,7 +37,7 @@ public class IndexOfDeterminantsTest {
 		m.set(3, 2, 1./2.);
 		m.set(3, 3, 1.);
 		
-		double ci = ConsistencyComputeMethod.getIndexOFdeterminantsMethod().compute(m);
+		double ci = ConsistencyComputeMethod.getIndexOfdeterminantsMethod().compute(m);
 		assertEquals(ci, 7.80324074, 0.0000001);
 		
 	}

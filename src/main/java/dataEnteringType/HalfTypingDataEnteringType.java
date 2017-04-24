@@ -145,6 +145,6 @@ public class HalfTypingDataEnteringType extends DataEnteringType {
 
 	@Override
 	public String toString() {
-		return "half consistecy";
+		return "half typing";
 	}
 }

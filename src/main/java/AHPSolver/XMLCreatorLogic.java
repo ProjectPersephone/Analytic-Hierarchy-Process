@@ -105,7 +105,7 @@ public class XMLCreatorLogic {
 	private void createXMLFile(String path)
 			throws FileAlreadyExistsException, IOException, ParserConfigurationException, TransformerException {
 		if (checkFileExists(path)) {
-			throw new FileAlreadyExistsException();
+			throw new FileAlreadyExistsException("File already exists.");
 		}
 
 		rootElement.appendChild(doc.createTextNode("\n"));

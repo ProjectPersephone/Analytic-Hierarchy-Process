@@ -315,22 +315,23 @@ public class AlternativesAndOptionsPart extends ViewPart {
 			public void handle(ActionEvent event) {
 				Alternative selected = list.getSelectionModel().getSelectedItem();
 				int cs = list.getSelectionModel().getSelectedIndex();
-				System.out.println("selected: " + selected);
 				if (selected != null) {
-					tree.deleteAlternative(selected);
-					list.getItems().remove(selected);
 					final int newSelectedIdx = (cs == list.getItems().size() - 1) ? cs - 1 : cs;
-
 					list.getSelectionModel().select(newSelectedIdx);
-					// System.out.println(list.getItems());
-					// list.refresh();
-					pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
+					removeAlternative(selected);
 				}
 
 			}
+
 		});
 		GridPane.setConstraints(addAlternativeButton, 1, 4);
 		return addAlternativeButton;
+	}
+
+	private void removeAlternative(Alternative selected) {
+		tree.deleteAlternative(selected);
+		list.getItems().remove(selected);
+		pane.fireEvent(new ConsistencyEvent(ConsistencyEvent.CHANGED_NUBER_OF_ALTERNATIVES));
 	}
 
 	private TextField createAlternativeNameTextFile() {

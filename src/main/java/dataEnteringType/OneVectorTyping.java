@@ -20,7 +20,7 @@ import model.Criterium;
 import model.CriteriumTree2;
 import model.Goal;
 
-public class HalfTypingDataEnteringType extends DataEnteringType {
+public class OneVectorTyping extends DataEnteringType {
 
 	GridPane gridPane;
 
@@ -46,20 +46,18 @@ public class HalfTypingDataEnteringType extends DataEnteringType {
 				String name = entry.getKey();
 				createLabel(i, j * 2, name);
 				TextField tf = createCmpValuesImputs(i, j, entry.getValue());
-				if (i - 1 != j) {
-					list.add(new InputListenerValues(tf, c, name, i - 1, j));
-				} else {
-					changeValue(tree, 1, c, name, tf);
-				}
+				InputListenerValues inputLV = new InputListenerValues(c, name, i - 1, j);
+				inputLV.setTextField(tf);
+				list.add(inputLV);
 				i++;
 			}
 		}
 
 		for (InputListenerValues ilv : list) {
-			if (ilv.checkMembershipToUpperTriangular()) {
-				for (InputListenerValues inverseIlv : list) {
-					if ((inverseIlv.getI() == ilv.getJ()) && (inverseIlv.getJ() == ilv.getI())) {
-						addListenerToInput(ilv, inverseIlv, tree);
+			if (ilv.checkMembershipToFirstRow()) {
+				for (InputListenerValues otherVectorIlv : list) {
+					if ((otherVectorIlv.getI() == ilv.getI()) && (otherVectorIlv != ilv)) {
+						addListenerToInput(ilv, otherVectorIlv, tree);
 					}
 				}
 			}
@@ -67,13 +65,12 @@ public class HalfTypingDataEnteringType extends DataEnteringType {
 
 	}
 
-	private void addListenerToInput(InputListenerValues ilv, InputListenerValues inverseIlv, CriteriumTree2 tree)
+	private void addListenerToInput(InputListenerValues ilv, InputListenerValues otherVectorIlv, CriteriumTree2 tree)
 			throws NumberFormatException, notFoundException {
 		TextField input = ilv.getTextField();
-		TextField inverseInput = inverseIlv.getTextField();
+		TextField otherVectorInput = otherVectorIlv.getTextField();
 		double value = Double.parseDouble(input.getText());
-		value = checkIfInfinity(value);
-		changeValue(tree, 1 / value, inverseIlv.getCriterium(), inverseIlv.getName(), inverseInput);
+		changeValue(tree, value, otherVectorIlv.getCriterium(), otherVectorIlv.getName(), otherVectorInput);
 		input.textProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
@@ -81,17 +78,14 @@ public class HalfTypingDataEnteringType extends DataEnteringType {
 				if (newValue.matches(regex)) {
 
 					double value = Double.parseDouble(newValue);
-					double inverseValue = 1. / checkIfInfinity(value);
-
-					// System.out.println("tf: " + input.getText() + " " +
-					// inverseInput.getText());
 					try {
 						changeValue(tree, value, ilv.getCriterium(), ilv.getName());
-						changeValue(tree, inverseValue, inverseIlv.getCriterium(), inverseIlv.getName(), inverseInput);
+						changeValue(tree, value, otherVectorIlv.getCriterium(), otherVectorIlv.getName(),
+								otherVectorInput);
 					} catch (notFoundException e) {
 						e.printStackTrace();
 					}
-					inverseInput.setText(String.valueOf(inverseValue));
+					otherVectorInput.setText(String.valueOf(value));
 				} else {
 					input.setText(oldValue);
 				}
@@ -99,13 +93,6 @@ public class HalfTypingDataEnteringType extends DataEnteringType {
 
 		});
 
-	}
-
-	private double checkIfInfinity(double value) {
-		if (value == 0) {
-			value = Double.POSITIVE_INFINITY;
-		}
-		return value;
 	}
 
 	private void changeValue(CriteriumTree2 tree, double value, Criterium c, String name) throws notFoundException {
@@ -131,7 +118,7 @@ public class HalfTypingDataEnteringType extends DataEnteringType {
 	private TextField createCmpValuesImputs(int i, int j, Double v) {
 		int k = j * 2 + 1;
 		TextField nInput = new TextField();
-		if (i - 1 <= j) {
+		if (j != 0) {
 			nInput.setDisable(true);
 		}
 		nInput.setMaxWidth(defInputWidth);
@@ -145,6 +132,6 @@ public class HalfTypingDataEnteringType extends DataEnteringType {
 
 	@Override
 	public String toString() {
-		return "half typing";
+		return "one vector typing";
 	}
 }

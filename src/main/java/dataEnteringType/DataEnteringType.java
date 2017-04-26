@@ -12,10 +12,20 @@ public abstract class DataEnteringType {
 	public abstract void create(Goal criterium, CriteriumTree2 tree, GridPane gridPane) throws MalformedTreeException, NumberFormatException, notFoundException;
 
 	public static DataEnteringType getHalfConsistencyType() {
-		return new HalfTypingDataEnteringType();
+		return new HalfTyping();
 	}
 	
 	public static DataEnteringType getFullTypingConsistencyType(){
-		return new FullTypingDataEnteringType();
+		return new FullTyping();
 	}
+	
+	public static OneVectorTyping getOneVectorTyping(){
+		return new OneVectorTyping();
+	}
+	
+	public static OneVectorSlider getOneVectorSlider(){
+		return new OneVectorSlider();
+	}
+	
+	
 }

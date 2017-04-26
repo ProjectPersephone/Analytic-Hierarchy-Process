@@ -17,7 +17,7 @@ import model.CriteriumTree2;
 import model.Goal;
 import events.EnteredValue;
 
-public class FullTypingDataEnteringType extends DataEnteringType {
+public class FullTyping extends DataEnteringType {
 	GridPane gridPane;
 
 	@Override

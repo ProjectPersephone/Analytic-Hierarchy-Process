@@ -58,14 +58,14 @@ public class DataEnteringPart extends ViewPart {
 	@Override
 	protected Pane createPane() {
 		Pane vBox = new VBox();
-//		vBox.getChildren().add(createMenuBar());
+		// vBox.getChildren().add(createMenuBar());
 		vBox.getChildren().add(createScrollpane());
 		return vBox;
 	}
 
 	private ScrollPane createScrollpane() {
 		ScrollPane sp = new ScrollPane();
-		sp.setPrefSize(DEFAULT_HEIGHT, DEFAULT_HEIGHT+0.0);
+		sp.setPrefSize(DEFAULT_HEIGHT, DEFAULT_HEIGHT + 0.0);
 		sp.setContent(arrangeScrollPaneContent());
 		return sp;
 	}
@@ -215,7 +215,7 @@ public class DataEnteringPart extends ViewPart {
 		labelPane = new VBox();
 		labelPane.setAlignment(Pos.BOTTOM_CENTER);
 		labelPane.setMinWidth(DEFAULT_HEIGHT - 10.0);
-		
+
 	}
 
 	private void arrangeEnteringTypePane() {
@@ -245,7 +245,8 @@ public class DataEnteringPart extends ViewPart {
 	private ComboBox<DataEnteringType> createDataEnteringTypeComboBox(Goal c) {
 
 		ObservableList<DataEnteringType> options = FXCollections.observableArrayList(
-				DataEnteringType.getFullTypingConsistencyType(), DataEnteringType.getHalfConsistencyType());
+				DataEnteringType.getFullTypingConsistencyType(), DataEnteringType.getHalfConsistencyType(),
+				DataEnteringType.getOneVectorTyping(), DataEnteringType.getOneVectorSlider());
 		ComboBox<DataEnteringType> methods = new ComboBox<DataEnteringType>(options);
 		methods.setValue(c.getDataEnteringType());
 		methods.setOnAction(new EventHandler<ActionEvent>() {

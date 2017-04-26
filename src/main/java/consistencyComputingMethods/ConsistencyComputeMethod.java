@@ -24,4 +24,6 @@ public abstract class ConsistencyComputeMethod {
 	public static IndexOfDeterminants getIndexOfdeterminantsMethod() {
 		return new IndexOfDeterminants();
 	}
+	
+	
 }
